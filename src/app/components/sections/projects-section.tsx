@@ -1,6 +1,6 @@
 // app/components/sections/projects-section.tsx
 
-"use client"
+'use client'
 
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Github, ArrowRight } from 'lucide-react'
@@ -9,34 +9,54 @@ export function ProjectsSection() {
   const projects = [
     {
       id: '1',
-      title: 'E-commerce Platform',
-      description: 'Full-stack e-commerce solution with React, Node.js, and PostgreSQL featuring user authentication, payment processing, and admin dashboard.',
-      image: '/projects/ecommerce.jpg',
-      technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe', 'Redis'],
-      liveUrl: 'https://ecommerce-demo.com',
-      githubUrl: 'https://github.com/johndoe/ecommerce',
-      featured: true
+      title: 'Job Portal Platform',
+      description:
+        'A full-stack job portal where users can post jobs, apply, and manage applications. Includes authentication, admin dashboard, and role-based access.',
+      image: '/projects/jobportal.jpg',
+      technologies: [
+        'Next.js',
+        'TypeScript',
+        'PostgreSQL',
+        'Prisma',
+        'TailwindCSS',
+      ],
+      liveUrl: 'https://jobportal-demo.vercel.app',
+      githubUrl: 'https://github.com/romjan-ali/jobportal',
+      featured: true,
     },
     {
       id: '2',
-      title: 'Task Management App',
-      description: 'Collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.',
-      image: '/projects/taskapp.jpg',
-      technologies: ['Next.js', 'Socket.io', 'MongoDB', 'Tailwind', 'tRPC'],
-      liveUrl: 'https://taskapp-demo.com',
-      githubUrl: 'https://github.com/johndoe/taskapp',
-      featured: true
+      title: 'Chat Application',
+      description:
+        'A real-time chat app with private and group messaging, typing indicators, and file sharing. Built with WebSockets for live communication.',
+      image: '/projects/chatapp.jpg',
+      technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'Zustand'],
+      liveUrl: 'https://chatapp-demo.vercel.app',
+      githubUrl: 'https://github.com/romjan-ali/chatapp',
+      featured: true,
     },
     {
       id: '3',
-      title: 'Weather Dashboard',
-      description: 'Beautiful weather dashboard with data visualization, location-based forecasts, and progressive web app capabilities.',
-      image: '/projects/weather.jpg',
-      technologies: ['React', 'Chart.js', 'PWA', 'API Integration', 'CSS3'],
-      liveUrl: 'https://weather-demo.com',
-      githubUrl: 'https://github.com/johndoe/weather',
-      featured: false
-    }
+      title: 'Personal Portfolio Website',
+      description:
+        'Modern portfolio website to showcase projects, blogs, and skills. Built with a clean UI, SEO optimization, and responsive design.',
+      image: '/projects/portfolio.jpg',
+      technologies: ['Next.js', 'TailwindCSS', 'Framer Motion', 'Shadcn UI'],
+      liveUrl: 'https://romjan-ali.netlify.app',
+      githubUrl: 'https://github.com/romjan-ali/portfolio',
+      featured: false,
+    },
+    {
+      id: '4',
+      title: 'E-Learning Platform',
+      description:
+        'A learning management system (LMS) where users can enroll in courses, track progress, and complete quizzes. Includes instructor dashboard.',
+      image: '/projects/elearning.jpg',
+      technologies: ['Next.js', 'tRPC', 'Prisma', 'Stripe', 'PostgreSQL'],
+      liveUrl: 'https://elearning-demo.vercel.app',
+      githubUrl: 'https://github.com/romjan-ali/elearning',
+      featured: false,
+    },
   ]
 
   return (
@@ -48,34 +68,37 @@ export function ProjectsSection() {
           </h2>
           <div className="w-24 h-1 bg-purple-400 mx-auto mb-6"></div>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            A showcase of my recent work and personal projects that demonstrate my skills and passion for development
+            A showcase of my recent work and personal projects that demonstrate
+            my skills and passion for development
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {projects.map((project, index) => (
-            <div 
+            <div
               key={project.id}
               className="group bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 hover:border-purple-500 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20"
             >
               {/* Project Image */}
               <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
                 <div className="absolute inset-0 bg-slate-900/50 flex items-center justify-center">
-                  <span className="text-white text-lg font-semibold">{project.title} Image</span>
+                  <span className="text-white text-lg font-semibold">
+                    {project.title} Image
+                  </span>
                 </div>
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="flex space-x-4">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="bg-white/20 backdrop-blur-sm text-white border-white hover:bg-white hover:text-slate-900"
                       onClick={() => window.open(project.liveUrl, '_blank')}
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Live Demo
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="border-white text-white hover:bg-white hover:text-slate-900"
                       onClick={() => window.open(project.githubUrl, '_blank')}
                     >
@@ -98,7 +121,7 @@ export function ProjectsSection() {
                     </span>
                   )}
                 </div>
-                
+
                 <p className="text-slate-400 mb-4 leading-relaxed">
                   {project.description}
                 </p>
@@ -106,7 +129,7 @@ export function ProjectsSection() {
                 {/* Technologies */}
                 <div className="flex flex-wrap gap-2 mb-6">
                   {project.technologies.map((tech, techIndex) => (
-                    <span 
+                    <span
                       key={techIndex}
                       className="bg-slate-700 text-slate-300 px-3 py-1 rounded-full text-sm border border-slate-600"
                     >
@@ -117,23 +140,23 @@ export function ProjectsSection() {
 
                 {/* Action Buttons */}
                 <div className="flex justify-between items-center">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     className="text-purple-400 hover:text-purple-300 hover:bg-slate-700 p-0 group/btn"
                     onClick={() => window.open(project.liveUrl, '_blank')}
                   >
                     View Project
                     <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300" />
                   </Button>
-                  
+
                   <div className="flex space-x-3">
-                    <button 
+                    <button
                       onClick={() => window.open(project.liveUrl, '_blank')}
                       className="text-slate-400 hover:text-white transition-colors duration-300"
                     >
                       <ExternalLink className="w-5 h-5" />
                     </button>
-                    <button 
+                    <button
                       onClick={() => window.open(project.githubUrl, '_blank')}
                       className="text-slate-400 hover:text-white transition-colors duration-300"
                     >
@@ -147,8 +170,8 @@ export function ProjectsSection() {
         </div>
 
         <div className="text-center mt-12">
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full border border-purple-500"
           >
             View All Projects

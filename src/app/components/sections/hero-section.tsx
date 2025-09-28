@@ -1,7 +1,9 @@
 // app/components/sections/hero-section.tsx
+
 import { Button } from '@/components/ui/button'
 import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export function HeroSection() {
   return (
@@ -47,20 +49,31 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-          <Button
-            size="lg"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105"
+          <Link
+            href="#projects"
+            className="rounded-full overflow-hidden transition-all duration-300 transform hover:scale-105"
           >
-            View My Work
-            <ArrowDown className="ml-2 w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-white text-white hover:bg-white hover:text-slate-900 px-8 py-3 rounded-full font-semibold transition-all duration-300"
+            <Button
+              size="lg"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 font-semibold"
+            >
+              View My Work
+              <ArrowDown className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
+          <Link
+            href="#contact"
+            className="rounded-full overflow-hidden transition-all duration-300 transform hover:scale-105"
           >
-            Get In Touch
-          </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-white text-slate-600 hover:bg-white hover:text-slate-900 px-8 py-3 rounded-full font-semibold"
+            >
+              Get In Touch
+              <ArrowDown className="ml-2 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
 
         <div className="flex justify-center space-x-6">
@@ -83,10 +96,6 @@ export function HeroSection() {
             <Mail className="w-6 h-6" />
           </a>
         </div>
-      </div>
-
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <ArrowDown className="w-6 h-6 text-white" />
       </div>
     </section>
   )

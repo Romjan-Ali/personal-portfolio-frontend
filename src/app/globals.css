@@ -121,6 +121,12 @@
   }
 }
 
+/* Smooth Scrolling */
+
+html {
+  scroll-behavior: smooth;
+}
+
 
 /* Animations */
 

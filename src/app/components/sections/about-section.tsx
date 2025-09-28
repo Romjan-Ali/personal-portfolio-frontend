@@ -10,6 +10,7 @@ export function AboutSection() {
     { number: '25+', label: 'Happy Clients' },
     { number: '10+', label: 'Technologies' },
   ]
+  
 
   return (
     <section id="about" className="py-20 bg-slate-50">
@@ -31,7 +32,7 @@ export function AboutSection() {
               <div className="w-80 h-96 mx-auto bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-1">
                 <div className="w-full h-full bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
                   <span className="text-white text-lg">
-                    <Image className='object-cover' width={600} height={2000} src="https://i.postimg.cc/C1twzgsP/IMG-20240617-064901.jpg" alt="Romjan Ali" />
+                    <Image className='object-cover' width={600} height={2000} src="/images/romjan-ali-2-3-r.png" alt="Romjan Ali" />
                   </span>
                 </div>
               </div>
