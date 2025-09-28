@@ -1,103 +1,142 @@
-import Image from "next/image";
+import { Metadata } from 'next'
+import { HeroSection } from '@/app/components/sections/hero-section'
+import { AboutSection } from '@/app/components/sections/about-section'
+import { ProjectsSection } from '@/app/components/sections/projects-section'
+import { BlogSection } from '@/app/components/sections/blog-section'
+import { ContactSection } from '@/app/components/sections/contact-section'
+import { SkillsSection } from '@/app/components/sections/skills-section'
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
+  openGraph: {
+    title: 'John Doe - Full Stack Developer',
+    description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
+    images: ['/og-home.jpg']
+  },
+  twitter: {
+    title: 'John Doe - Full Stack Developer',
+    description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
+    images: ['/og-home.jpg']
+  }
+}
+
+export default async function HomePage() {
+  // In a real app, you would fetch data here
+  // const [projects, blogs, personalInfo] = await Promise.all([
+  //   getProjects({ featured: true, limit: 3 }),
+  //   getBlogs({ featured: true, limit: 3 }),
+  //   getPersonalInfo()
+  // ])
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen">
+      <HeroSection />
+      <AboutSection />
+      <SkillsSection />
+      <ProjectsSection />
+      <BlogSection />
+      <ContactSection />
     </div>
-  );
+  )
+}
+
+// This would be your data fetching functions
+async function getProjects(options: { featured?: boolean; limit?: number }) {
+  // Simulate API call
+  return [
+    {
+      id: '1',
+      title: 'E-commerce Platform',
+      slug: 'ecommerce-platform',
+      description: 'Full-stack e-commerce solution with React, Node.js, and PostgreSQL',
+      featuredImage: '/projects/ecommerce.jpg',
+      technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
+      liveUrl: 'https://ecommerce-demo.com',
+      githubUrl: 'https://github.com/johndoe/ecommerce',
+      status: 'COMPLETED' as const
+    },
+    {
+      id: '2',
+      title: 'Task Management App',
+      slug: 'task-management-app',
+      description: 'Collaborative task management with real-time updates',
+      featuredImage: '/projects/taskapp.jpg',
+      technologies: ['Next.js', 'Socket.io', 'MongoDB', 'Tailwind'],
+      liveUrl: 'https://taskapp-demo.com',
+      githubUrl: 'https://github.com/johndoe/taskapp',
+      status: 'COMPLETED' as const
+    },
+    {
+      id: '3',
+      title: 'Weather Dashboard',
+      slug: 'weather-dashboard',
+      description: 'Beautiful weather dashboard with data visualization',
+      featuredImage: '/projects/weather.jpg',
+      technologies: ['React', 'Chart.js', 'API Integration', 'PWA'],
+      liveUrl: 'https://weather-demo.com',
+      githubUrl: 'https://github.com/johndoe/weather',
+      status: 'COMPLETED' as const
+    }
+  ]
+}
+
+async function getBlogs(options: { featured?: boolean; limit?: number }) {
+  // Simulate API call
+  return [
+    {
+      id: '1',
+      title: 'React Best Practices for 2024',
+      slug: 'react-best-practices-2024',
+      excerpt: 'Essential patterns and practices for building maintainable React applications in 2024.',
+      featuredImage: '/blog/react-best-practices.jpg',
+      publishedAt: '2024-01-15T10:00:00Z',
+      readTime: 8,
+      author: {
+        name: 'John Doe',
+        avatar: '/authors/john-doe.jpg'
+      },
+      tags: [
+        { name: 'React', color: '#61DAFB' },
+        { name: 'JavaScript', color: '#F7DF1E' },
+        { name: 'Best Practices', color: '#10B981' }
+      ]
+    },
+    {
+      id: '2',
+      title: 'Node.js Performance Optimization',
+      slug: 'nodejs-performance-optimization',
+      excerpt: 'Comprehensive guide to optimizing Node.js applications for better performance.',
+      featuredImage: '/blog/nodejs-performance.jpg',
+      publishedAt: '2024-01-10T14:30:00Z',
+      readTime: 12,
+      author: {
+        name: 'John Doe',
+        avatar: '/authors/john-doe.jpg'
+      },
+      tags: [
+        { name: 'Node.js', color: '#339933' },
+        { name: 'Performance', color: '#F59E0B' },
+        { name: 'Backend', color: '#8B5CF6' }
+      ]
+    },
+    {
+      id: '3',
+      title: 'Advanced TypeScript Patterns',
+      slug: 'advanced-typescript-patterns',
+      excerpt: 'Dive deep into advanced TypeScript features and patterns for robust applications.',
+      featuredImage: '/blog/typescript-advanced.jpg',
+      publishedAt: '2024-01-05T09:15:00Z',
+      readTime: 15,
+      author: {
+        name: 'John Doe',
+        avatar: '/authors/john-doe.jpg'
+      },
+      tags: [
+        { name: 'TypeScript', color: '#3178C6' },
+        { name: 'Advanced', color: '#EF4444' },
+        { name: 'Patterns', color: '#06B6D4' }
+      ]
+    }
+  ]
 }
