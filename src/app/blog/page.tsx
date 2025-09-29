@@ -5,7 +5,7 @@ import { getBlogPosts, getAllTags } from '@/lib/blog-data'
 import { BlogCard } from '@/app/components/blog/blog-card'
 import { BlogSearch } from '@/app/components/blog/blog-search'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, ArrowRight, Search } from 'lucide-react'
+import { Calendar, Clock, ArrowRight, Search, Plus } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Blog - John Doe',
@@ -80,6 +80,16 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
                 <div className="text-sm">Topics</div>
               </div>
             </div>
+
+            {/* Add Create Button for Admin */}
+      <div className="mt-8">
+        <Link href="/blog/create">
+          <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full">
+            <Plus className="w-5 h-5 mr-2" />
+            Write New Post
+          </Button>
+        </Link>
+      </div>
           </div>
         </div>
       </section>

@@ -220,3 +220,18 @@ export function searchPosts(query: string): BlogPost[] {
     post.content.toLowerCase().includes(searchTerm)
   )
 }
+
+// Add to lib/blog-data.ts
+export function createBlogPost(post: CreateBlogPost): BlogPost {
+  const newPost: BlogPost = {
+    ...post,
+    id: `blog-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    author: demoUser
+  }
+
+  // In a real app, this would be a database operation
+  blogPosts.unshift(newPost) // Add to beginning of array
+  return newPost
+}
