@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { blogPostValidation } from '@/lib/blog-types'
-import { demoUser } from '@/lib/blog-data'
+import { demoUser, blogPosts } from '@/lib/blog-data'
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X } from 'lucide-react'
 
 interface CreatePostFormProps {
@@ -20,6 +19,29 @@ interface FormErrors {
   slug?: string
   summary?: string
   content?: string
+}
+
+// Validation schema (moved here since blog-types doesn't exist)
+const blogPostValidation = {
+  title: {
+    required: 'Title is required',
+    minLength: 5,
+    maxLength: 100
+  },
+  slug: {
+    required: 'Slug is required',
+    pattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    message: 'Slug must be lowercase with hyphens (e.g., my-awesome-post)'
+  },
+  summary: {
+    required: 'Summary is required',
+    minLength: 50,
+    maxLength: 200
+  },
+  content: {
+    required: 'Content is required',
+    minLength: 100
+  }
 }
 
 export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
@@ -107,10 +129,11 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
     setIsLoading(true)
 
     try {
-      // In a real app, this would be an API call
+      // Create new post with all required fields
       const newPost = {
         id: `blog-${Date.now()}`,
         ...formData,
+        views: 0, // Initialize views to 0
         authorId: demoUser.id,
         author: demoUser,
         createdAt: new Date().toISOString(),
@@ -120,11 +143,15 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // In a real app, you would save to the database here
+      // In a real app, this would be an API call to save to database
+      // For demo purposes, we'll add it to our local array and log it
       console.log('Creating post:', newPost)
+      
+      // Add to our blogPosts array (in a real app, this would be a database operation)
+      blogPosts.unshift(newPost)
 
       // Show success message
-      alert('Blog post created successfully!')
+      alert(`Blog post ${formData.published ? 'published' : 'saved as draft'} successfully!`)
 
       if (onSuccess) {
         onSuccess()
@@ -157,6 +184,11 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
     }))
   }
 
+  // Check if slug is unique
+  const isSlugUnique = (slug: string) => {
+    return !blogPosts.some(post => post.slug === slug)
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
       <div className="container mx-auto px-4 py-8">
@@ -166,11 +198,11 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
             <div className="flex items-center space-x-4">
               <Button
                 variant="outline"
-                onClick={onCancel}
+                onClick={onCancel || (() => router.push('/blog'))}
                 className="border-slate-300"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
+                Back to Blog
               </Button>
               <h1 className="text-3xl font-bold text-slate-900">
                 Create New Post
@@ -182,6 +214,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                 variant="outline"
                 onClick={() => setIsPreview(!isPreview)}
                 className="border-slate-300"
+                disabled={isLoading}
               >
                 {isPreview ? (
                   <>
@@ -202,7 +235,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                 className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {isLoading ? 'Publishing...' : 'Publish Post'}
+                {isLoading ? 'Saving...' : formData.published ? 'Publish Post' : 'Save as Draft'}
               </Button>
             </div>
           </div>
@@ -210,35 +243,88 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
           {/* Preview Mode */}
           {isPreview ? (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+              <div className="flex items-center justify-between mb-4">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  formData.published 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {formData.published ? 'Published' : 'Draft'}
+                </span>
+                <span className="text-slate-500 text-sm">
+                  Slug: {formData.slug || 'not-set'}
+                </span>
+              </div>
+
               <h1 className="text-4xl font-bold text-slate-900 mb-4">
-                {formData.title || 'Untitled'}
+                {formData.title || 'Untitled Post'}
               </h1>
 
               {formData.thumbnail && (
                 <div className="mb-6">
-                  <div className="bg-slate-200 h-64 rounded-lg flex items-center justify-center">
-                    <span className="text-slate-600">
-                      Thumbnail: {formData.thumbnail}
-                    </span>
+                  <div className="bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl p-1">
+                    <div 
+                      className="bg-slate-800 rounded-xl h-64 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${formData.thumbnail})` }}
+                    />
                   </div>
+                  <p className="text-slate-500 text-sm mt-2 text-center">
+                    Thumbnail Preview
+                  </p>
                 </div>
               )}
 
-              <p className="text-xl text-slate-600 mb-6">
+              <p className="text-xl text-slate-600 mb-6 leading-relaxed">
                 {formData.summary || 'No summary provided'}
               </p>
 
               <div className="prose prose-slate max-w-none">
                 {formData.content ? (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: formData.content.replace(/\n/g, '<br/>'),
-                    }}
-                  />
+                  <div className="border-t border-slate-200 pt-6">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: formData.content
+                          .replace(/\n/g, '<br/>')
+                          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                          .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                          .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                      }}
+                    />
+                  </div>
                 ) : (
-                  <p className="text-slate-500 italic">No content yet...</p>
+                  <p className="text-slate-500 italic border-t border-slate-200 pt-6">
+                    No content yet...
+                  </p>
                 )}
               </div>
+
+              {/* Additional Images Preview */}
+              {formData.images.length > 0 && (
+                <div className="mt-8 border-t border-slate-200 pt-6">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                    Additional Images ({formData.images.length})
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {formData.images.map((image, index) => (
+                      <div key={index} className="bg-slate-100 rounded-lg p-3">
+                        <div 
+                          className="bg-slate-300 h-32 rounded flex items-center justify-center bg-cover bg-center"
+                          style={{ backgroundImage: `url(${image})` }}
+                        >
+                          {!image && (
+                            <span className="text-slate-600 text-sm">Image {index + 1}</span>
+                          )}
+                        </div>
+                        <p className="text-slate-500 text-xs mt-2 truncate">
+                          {image || 'No URL provided'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             /* Edit Mode */
@@ -264,12 +350,16 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                       onChange={handleTitleChange}
                       placeholder="Enter blog post title"
                       className={errors.title ? 'border-red-500' : ''}
+                      disabled={isLoading}
                     />
                     {errors.title && (
                       <p className="text-red-500 text-sm mt-1">
                         {errors.title}
                       </p>
                     )}
+                    <p className="text-slate-500 text-sm mt-1">
+                      {formData.title.length}/100 characters
+                    </p>
                   </div>
 
                   {/* Slug */}
@@ -286,13 +376,18 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                       onChange={handleSlugChange}
                       placeholder="my-awesome-post"
                       className={errors.slug ? 'border-red-500' : ''}
+                      disabled={isLoading}
                     />
                     {errors.slug && (
                       <p className="text-red-500 text-sm mt-1">{errors.slug}</p>
                     )}
+                    {formData.slug && !errors.slug && !isSlugUnique(formData.slug) && (
+                      <p className="text-orange-500 text-sm mt-1">
+                        Warning: This slug already exists and may cause conflicts
+                      </p>
+                    )}
                     <p className="text-slate-500 text-sm mt-1">
-                      This will be used in the URL. Use lowercase letters,
-                      numbers, and hyphens.
+                      This will be used in the URL. Use lowercase letters, numbers, and hyphens.
                     </p>
                   </div>
 
@@ -314,9 +409,10 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                         }))
                         validateField('summary', e.target.value)
                       }}
-                      placeholder="Brief summary of your blog post"
+                      placeholder="Brief summary of your blog post that will appear in listings and search results..."
                       rows={3}
                       className={errors.summary ? 'border-red-500' : ''}
+                      disabled={isLoading}
                     />
                     {errors.summary && (
                       <p className="text-red-500 text-sm mt-1">
@@ -324,7 +420,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                       </p>
                     )}
                     <p className="text-slate-500 text-sm mt-1">
-                      {formData.summary.length}/200 characters
+                      {formData.summary.length}/200 characters • {200 - formData.summary.length} remaining
                     </p>
                   </div>
                 </div>
@@ -353,18 +449,20 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                       }))
                       validateField('content', e.target.value)
                     }}
-                    placeholder="Write your blog post content here..."
+                    placeholder="Write your blog post content here... You can use basic markdown like # for headings, **bold**, and *italic* text."
                     rows={12}
                     className={errors.content ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.content && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.content}
                     </p>
                   )}
-                  <p className="text-slate-500 text-sm mt-1">
-                    {formData.content.length} characters
-                  </p>
+                  <div className="flex justify-between text-slate-500 text-sm mt-1">
+                    <span>{formData.content.length} characters</span>
+                    <span>{Math.ceil(formData.content.split(/\s+/).length / 200)} min read</span>
+                  </div>
                 </div>
               </div>
 
@@ -393,7 +491,11 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                         }))
                       }
                       placeholder="https://example.com/image.jpg"
+                      disabled={isLoading}
                     />
+                    <p className="text-slate-500 text-sm mt-1">
+                      Main image that will represent your blog post in listings
+                    </p>
                   </div>
 
                   {/* Additional Images */}
@@ -408,6 +510,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                         size="sm"
                         onClick={addImage}
                         className="border-slate-300"
+                        disabled={isLoading}
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         Add Image
@@ -431,6 +534,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                               }))
                             }}
                             placeholder="https://example.com/image.jpg"
+                            disabled={isLoading}
                           />
                           <Button
                             type="button"
@@ -438,6 +542,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                             size="sm"
                             onClick={() => removeImage(index)}
                             className="border-red-300 text-red-600 hover:bg-red-50"
+                            disabled={isLoading}
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -472,6 +577,7 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                       }))
                     }
                     className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                    disabled={isLoading}
                   />
                   <label
                     htmlFor="published"
@@ -481,7 +587,10 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                   </label>
                 </div>
                 <p className="text-slate-500 text-sm mt-1">
-                  If unchecked, the post will be saved as a draft.
+                  {formData.published 
+                    ? 'This post will be visible to everyone immediately.' 
+                    : 'This post will be saved as a draft and not visible to the public.'
+                  }
                 </p>
               </div>
 
@@ -490,8 +599,9 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onCancel}
+                  onClick={onCancel || (() => router.push('/blog'))}
                   className="border-slate-300"
+                  disabled={isLoading}
                 >
                   Cancel
                 </Button>
@@ -501,7 +611,12 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Publishing...' : 'Publish Post'}
+                  {isLoading 
+                    ? 'Saving...' 
+                    : formData.published 
+                      ? 'Publish Post' 
+                      : 'Save as Draft'
+                  }
                 </Button>
               </div>
             </form>

@@ -1,4 +1,6 @@
 // lib/blog-types.ts
+
+
 export interface CreateBlogPost {
   title: string
   slug: string

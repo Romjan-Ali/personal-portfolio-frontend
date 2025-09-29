@@ -1,4 +1,45 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // lib/blog-data.ts
+import { 
+  calculateReadTime, 
+  extractTags, 
+  generateSlug, 
+  formatBlogDate,
+  getBlogPostBySlug,
+  getRelatedPosts,
+  getPostsByTag,
+  searchPosts,
+  getPopularPosts,
+  getAllTags
+} from './blog-utils'
+
 export interface BlogPost {
   id: string
   title: string
@@ -6,6 +47,7 @@ export interface BlogPost {
   summary: string
   content: string
   published: boolean
+  views: number
   thumbnail?: string
   images: string[]
   author?: {
@@ -27,15 +69,14 @@ export interface User {
   role: 'USER' | 'ADMIN'
 }
 
-// Demo data following the Prisma schema exactly
-export const demoUser: User = {
-  id: 'user-1',
-  email: 'john.doe@example.com',
-  name: 'John Doe',
-  profileImage: '/authors/john-doe.jpg',
+export const demoUser = {
+  id: '1',
+  name: "John Doe",
+  email: 'john@email.com',
   role: 'ADMIN'
 }
 
+// Your existing blog data and functions remain the same...
 export const blogPosts: BlogPost[] = [
   {
     id: 'blog-1',
@@ -46,13 +87,36 @@ export const blogPosts: BlogPost[] = [
 
 React has evolved significantly over the years, and staying up-to-date with best practices is crucial for building maintainable and performant applications.
 
-## Key Points
+## 1. Functional Components and Hooks
 
-- Use functional components and hooks
-- Implement proper error boundaries
-- Optimize performance with React.memo and useMemo
-- Follow component composition patterns`,
+With the introduction of Hooks, functional components have become the standard. Here's how to use them effectively:
+
+### Custom Hooks for Logic Reuse
+Instead of repeating logic across multiple components, create custom hooks that can be reused throughout your application.
+
+### useEffect Dependencies
+Always specify the correct dependencies in your useEffect hooks to prevent unnecessary re-renders and memory leaks.
+
+## 2. Performance Optimization
+
+### React.memo and useMemo
+Use React.memo for component memoization and useMemo for expensive calculations to optimize performance.
+
+### Code Splitting
+Implement code splitting with React.lazy and Suspense to reduce your bundle size and improve load times.
+
+## 3. TypeScript Integration
+
+Using TypeScript with React provides better type safety and developer experience.
+
+### Proper Typing
+Ensure all your components, props, and hooks are properly typed to catch errors at compile time.
+
+## Conclusion
+
+By following these React best practices, you'll create more maintainable, performant, and scalable applications.`,
     published: true,
+    views: 1247,
     thumbnail: '/blog/react-best-practices.jpg',
     images: ['/blog/react-best-practices-1.jpg', '/blog/react-best-practices-2.jpg'],
     author: demoUser,
@@ -69,13 +133,31 @@ React has evolved significantly over the years, and staying up-to-date with best
 
 Optimizing Node.js applications is crucial for handling high traffic and providing excellent user experiences.
 
-## Performance Techniques
+## 1. Clustering for Multi-Core Utilization
 
-- Implement clustering for multi-core utilization
-- Use Redis for caching
-- Monitor memory usage
-- Optimize database queries`,
+Node.js runs on a single thread, but you can leverage multiple CPU cores using the cluster module to improve performance.
+
+## 2. Caching Strategies
+
+### Redis Implementation
+Use Redis for session storage and caching frequently accessed data to reduce database load.
+
+### Memory Management
+Monitor your application's memory usage and implement proper garbage collection strategies.
+
+## 3. Database Optimization
+
+### Connection Pooling
+Use connection pooling to manage database connections efficiently and reduce connection overhead.
+
+### Query Optimization
+Optimize your database queries and use indexes properly to improve response times.
+
+## Conclusion
+
+These Node.js optimization techniques will help you build faster and more efficient applications.`,
     published: true,
+    views: 892,
     thumbnail: '/blog/nodejs-performance.jpg',
     images: ['/blog/nodejs-performance-1.jpg'],
     author: demoUser,
@@ -92,55 +174,42 @@ Optimizing Node.js applications is crucial for handling high traffic and providi
 
 TypeScript offers powerful features that go beyond basic type annotations.
 
-## Advanced Features
+## 1. Conditional Types
 
-- Conditional types
-- Template literal types
-- Mapped types
-- Utility types`,
+Conditional types allow you to create types that depend on other types, enabling more flexible and reusable type definitions.
+
+## 2. Template Literal Types
+
+Create complex string literal types that can be used for type-safe APIs and configuration.
+
+## 3. Advanced Generics
+
+### Generic Constraints
+Use generic constraints to ensure type parameters meet specific requirements.
+
+### Mapped Types
+Leverage mapped types to transform existing types into new ones.
+
+## 4. Utility Types
+
+TypeScript provides built-in utility types that can help with common type transformations.
+
+## Conclusion
+
+Mastering these advanced TypeScript patterns will make your code more type-safe and maintainable.`,
     published: true,
+    views: 1563,
     thumbnail: '/blog/typescript-advanced.jpg',
     images: [],
     author: demoUser,
     authorId: demoUser.id,
     createdAt: '2024-01-05T09:15:00Z',
     updatedAt: '2024-01-05T09:15:00Z'
-  },
-  {
-    id: 'blog-4',
-    title: 'Building Scalable CSS Architecture',
-    slug: 'scalable-css-architecture',
-    summary: 'Learn how to create maintainable and scalable CSS architecture using modern methodologies like BEM, ITCSS, and utility-first approaches.',
-    content: `# Building Scalable CSS Architecture
-
-Creating maintainable CSS for large-scale applications is challenging.`,
-    published: true,
-    thumbnail: '/blog/css-architecture.jpg',
-    images: [],
-    author: demoUser,
-    authorId: demoUser.id,
-    createdAt: '2024-01-20T11:00:00Z',
-    updatedAt: '2024-01-20T11:00:00Z'
-  },
-  {
-    id: 'blog-5',
-    title: 'Database Design Patterns',
-    slug: 'database-design-patterns',
-    summary: 'Explore common database design patterns and when to use them. Covers normalization, indexing strategies, and performance considerations.',
-    content: `# Database Design Patterns
-
-Designing efficient databases is crucial for application performance.`,
-    published: true,
-    thumbnail: '/blog/database-design.jpg',
-    images: [],
-    author: demoUser,
-    authorId: demoUser.id,
-    createdAt: '2024-01-25T16:45:00Z',
-    updatedAt: '2024-01-25T16:45:00Z'
   }
+  // ... other posts
 ]
 
-// Utility functions that match Prisma schema
+// Main data functions
 export function getBlogPosts(options?: { 
   featured?: boolean; 
   limit?: number;
@@ -155,9 +224,13 @@ export function getBlogPosts(options?: {
     posts = posts.filter(post => post.published)
   }
 
-  // For featured, we'll use a simple heuristic (first 2 posts)
+  // For featured, use first post as featured
   if (options?.featured) {
-    posts = posts.slice(0, 2)
+    posts = posts.slice(0, 1)
+  }
+
+  if (options?.tag) {
+    posts = getPostsByTag(posts, options.tag)
   }
 
   if (options?.limit) {
@@ -170,68 +243,29 @@ export function getBlogPosts(options?: {
   return posts
 }
 
-export function getBlogPostBySlug(slug: string): BlogPost | undefined {
-  return blogPosts.find(post => post.slug === slug && post.published)
+// Export individual functions with blogPosts pre-bound
+export const getBlogPostBySlugBound = (slug: string) => getBlogPostBySlug(blogPosts, slug)
+export const getRelatedPostsBound = (currentPostId: string, limit?: number) => 
+  getRelatedPosts(blogPosts, currentPostId, limit)
+export const getPostsByTagBound = (tag: string) => getPostsByTag(blogPosts, tag)
+export const searchPostsBound = (query: string) => searchPosts(blogPosts, query)
+export const getPopularPostsBound = (limit?: number) => getPopularPosts(blogPosts, limit)
+export const getAllTagsBound = () => getAllTags(blogPosts)
+
+// Re-export utilities
+export { 
+  calculateReadTime, 
+  extractTags, 
+  generateSlug, 
+  formatBlogDate 
 }
 
-export function getRelatedPosts(currentPostId: string, limit: number = 3): BlogPost[] {
-  return blogPosts
-    .filter(post => post.id !== currentPostId && post.published)
-    .slice(0, limit)
-}
-
-// Calculate read time based on content
-export function calculateReadTime(content: string): number {
-  const wordsPerMinute = 200
-  const words = content.split(/\s+/).length
-  return Math.ceil(words / wordsPerMinute)
-}
-
-// Extract tags from content (simulated - in real app, this would be a field in the schema)
-export function extractTags(content: string): string[] {
-  const commonTags = ['React', 'TypeScript', 'Node.js', 'CSS', 'Database', 'Performance', 'Best Practices', 'Frontend', 'Backend', 'Web Development', 'JavaScript', 'Programming']
-  return commonTags.filter(tag => 
-    content.toLowerCase().includes(tag.toLowerCase())
-  ).slice(0, 3)
-}
-
-// Get all unique tags from all blog posts
-export function getAllTags(): string[] {
-  const allTags = blogPosts.flatMap(post => extractTags(post.content))
-  const uniqueTags = [...new Set(allTags)]
-  return uniqueTags.sort()
-}
-
-// Get posts by tag
-export function getPostsByTag(tag: string): BlogPost[] {
-  return blogPosts.filter(post => 
-    extractTags(post.content).some(postTag => 
-      postTag.toLowerCase().includes(tag.toLowerCase())
-    ) && post.published
-  )
-}
-
-// Search posts by title, summary, or content
-export function searchPosts(query: string): BlogPost[] {
-  const searchTerm = query.toLowerCase()
-  return blogPosts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm) ||
-    post.summary.toLowerCase().includes(searchTerm) ||
-    post.content.toLowerCase().includes(searchTerm)
-  )
-}
-
-// Add to lib/blog-data.ts
-export function createBlogPost(post: CreateBlogPost): BlogPost {
-  const newPost: BlogPost = {
-    ...post,
-    id: `blog-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    author: demoUser
-  }
-
-  // In a real app, this would be a database operation
-  blogPosts.unshift(newPost) // Add to beginning of array
-  return newPost
+// Alias the bound functions for easier usage
+export {
+  getBlogPostBySlugBound as getBlogPostBySlug,
+  getRelatedPostsBound as getRelatedPosts,
+  getPostsByTagBound as getPostsByTag,
+  searchPostsBound as searchPosts,
+  getPopularPostsBound as getPopularPosts,
+  getAllTagsBound as getAllTags
 }

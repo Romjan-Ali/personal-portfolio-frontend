@@ -1,4 +1,5 @@
 // app/blog/[slug]/page.tsx
+
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -6,7 +7,8 @@ import { getBlogPostBySlug, getRelatedPosts, calculateReadTime } from '@/lib/blo
 import { BlogContent } from '@/app/components/blog/blog-content'
 import { BlogSidebar } from '@/app/components/blog/blog-sidebar'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, ArrowLeft, Share2 } from 'lucide-react'
+import { Calendar, Clock, ArrowLeft, Eye } from 'lucide-react'
+import { ShareButton } from '@/app/components/blog/share-button'
 
 interface BlogPostPageProps {
   params: {
@@ -34,6 +36,15 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       authors: [post.author?.name || 'John Doe'],
     },
   }
+}
+
+export async function generateStaticParams() {
+  const { getBlogPosts } = await import('@/lib/blog-data')
+  const posts = getBlogPosts()
+  
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
 }
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
@@ -71,6 +82,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 <Clock className="w-4 h-4 mr-2" />
                 {readTime} min read
               </div>
+              <div className="flex items-center">
+                <Eye className="w-4 h-4 mr-2" />
+                {post.views.toLocaleString()} views
+              </div>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
@@ -105,12 +120,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     {post.author?.email || 'Full Stack Developer'}
                   </div>
                 </div>
-              </div>
+              </div>            
               
-              <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
+              <ShareButton post={post} />
             </div>
           </div>
         </div>
@@ -125,12 +137,18 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="lg:col-span-3">
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                   {/* Thumbnail */}
-                  {post.thumbnail && (
+                  {post.thumbnail ? (
                     <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-1">
                       <div 
                         className="bg-cover bg-center h-64"
                         style={{ backgroundImage: `url(${post.thumbnail})` }}
                       />
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-1">
+                      <div className="bg-slate-800 h-64 flex items-center justify-center">
+                        <span className="text-white font-semibold">Blog Post Image</span>
+                      </div>
                     </div>
                   )}
                   
@@ -140,14 +158,22 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     
                     {/* Additional Images */}
                     {post.images && post.images.length > 0 && (
-                      <div className="mt-8 grid grid-cols-2 gap-4">
-                        {post.images.map((image, index) => (
-                          <div key={index} className="bg-slate-100 rounded-lg p-4">
-                            <div className="bg-slate-300 h-32 rounded flex items-center justify-center">
-                              <span className="text-slate-600 text-sm">Image {index + 1}</span>
+                      <div className="mt-8">
+                        <h4 className="text-lg font-semibold text-slate-900 mb-4">Additional Images</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {post.images.map((image, index) => (
+                            <div key={index} className="bg-slate-100 rounded-lg p-4">
+                              <div 
+                                className="bg-slate-300 h-48 rounded flex items-center justify-center bg-cover bg-center"
+                                style={{ backgroundImage: `url(${image})` }}
+                              >
+                                {!image && (
+                                  <span className="text-slate-600 text-sm">Image {index + 1}</span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -170,7 +196,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 }
 
 function RelatedPostsSection({ currentPostId }: { currentPostId: string }) {
-  const relatedPosts = getRelatedPosts(currentPostId)
+  const relatedPosts = getRelatedPosts(currentPostId, 3)
 
   if (relatedPosts.length === 0) return null
 
@@ -184,15 +210,22 @@ function RelatedPostsSection({ currentPostId }: { currentPostId: string }) {
             href={`/blog/${post.slug}`}
             className="block group"
           >
-            <div className="bg-white rounded-lg border border-slate-200 p-4 hover:border-purple-300 transition-colors duration-300">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 hover:border-purple-300 transition-colors duration-300 h-full">
+              {post.thumbnail && (
+                <div 
+                  className="w-full h-32 bg-cover bg-center rounded-lg mb-3"
+                  style={{ backgroundImage: `url(${post.thumbnail})` }}
+                />
+              )}
               <h4 className="font-semibold text-slate-900 group-hover:text-purple-600 transition-colors line-clamp-2 mb-2">
                 {post.title}
               </h4>
               <p className="text-slate-600 text-sm line-clamp-2 mb-3">
                 {post.summary}
               </p>
-              <div className="text-xs text-slate-500">
-                {new Date(post.createdAt).toLocaleDateString()}
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span>{calculateReadTime(post.content)} min read</span>
               </div>
             </div>
           </Link>
