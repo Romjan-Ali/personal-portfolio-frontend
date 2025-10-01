@@ -1,7 +1,7 @@
 // app/blog/page.tsx
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { getBlogPosts, getAllTags, getPostsByTag, searchPosts, calculateReadTime, extractTags } from '@/lib/blog-data'
+import { getBlogPosts, getAllTags, getPostsByTag, searchPosts, calculateReadTime, extractTags, BlogPost } from '@/lib/blog-data'
 import { BlogCard } from '@/app/components/blog/blog-card'
 import { BlogSearch } from '@/app/components/blog/blog-search'
 import { Button } from '@/components/ui/button'
@@ -19,16 +19,19 @@ interface BlogPageProps {
   }
 }
 
-export default function BlogPage({ searchParams }: BlogPageProps) {
-  const posts = getBlogPosts()
-  const tags = getAllTags()
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const postsResult = await getBlogPosts()
+  const posts = postsResult.data
+
+  const tagsResult = await getAllTags()
+  const tags = tagsResult.data
   
   // Filter posts based on search params using the utility functions
   let filteredPosts = posts
   if (searchParams.tag) {
-    filteredPosts = getPostsByTag(searchParams.tag)
+    filteredPosts = await getPostsByTag(searchParams.tag)
   } else if (searchParams.search) {
-    filteredPosts = searchPosts(searchParams.search)
+    filteredPosts = await searchPosts(searchParams.search)
   }
 
   // Use the first post as featured when no filters are applied
@@ -59,7 +62,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">
-                  {posts.reduce((total, post) => total + post.views, 0).toLocaleString()}
+                  {posts.reduce((total: number, post: BlogPost) => total + post.views, 0).toLocaleString()}
                 </div>
                 <div className="text-sm">Total Views</div>
               </div>
@@ -203,7 +206,7 @@ export default function BlogPage({ searchParams }: BlogPageProps) {
             {/* Blog Grid */}
             {filteredPosts.length > 0 ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredPosts.map((post) => (
+                {filteredPosts.map((post: BlogPost) => (
                   <BlogCard key={post.id} post={post} />
                 ))}
               </div>

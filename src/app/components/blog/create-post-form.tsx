@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { demoUser, blogPosts } from '@/lib/blog-data'
+import { demoUser, getBlogPosts } from '@/lib/blog-data'
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X } from 'lucide-react'
 
 interface CreatePostFormProps {
@@ -44,7 +44,7 @@ const blogPostValidation = {
   }
 }
 
-export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
+export async function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [isPreview, setIsPreview] = useState(false)
@@ -59,6 +59,8 @@ export function CreatePostForm({ onCancel, onSuccess }: CreatePostFormProps) {
     thumbnail: '',
     images: [] as string[],
   })
+
+  const blogPosts = await getBlogPosts()
 
   const generateSlug = (title: string) => {
     return title

@@ -2,10 +2,10 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, ArrowRight, Eye } from 'lucide-react'
-import { getBlogPosts, calculateReadTime, extractTags } from '@/lib/blog-data'
+import { getBlogPosts, calculateReadTime, extractTags, BlogPost } from '@/lib/blog-data'
 
-export function BlogSection() {
-  const blogs = getBlogPosts({ limit: 3 })
+export async function BlogSection() {
+  const blogs = await getBlogPosts({ limit: 3 })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -30,10 +30,10 @@ export function BlogSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {blogs.map((blog) => {
+          {blogs?.data.map((blog: BlogPost) => {
             const readTime = calculateReadTime(blog.content)
             const tags = extractTags(blog.content)
-            
+
             return (
               <article
                 key={blog.id}
@@ -43,17 +43,19 @@ export function BlogSection() {
                 <Link href={`/blog/${blog.slug}`}>
                   <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
                     {blog.thumbnail ? (
-                      <div 
+                      <div
                         className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
                         style={{ backgroundImage: `url(${blog.thumbnail})` }}
                       />
                     ) : (
                       <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center group-hover:bg-slate-900/10 transition-colors duration-300">
-                        <span className="text-white font-semibold">Blog Image</span>
+                        <span className="text-white font-semibold">
+                          Blog Image
+                        </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />
-                    
+
                     {/* Tag */}
                     {tags.length > 0 && (
                       <div className="absolute top-4 left-4">
@@ -62,7 +64,7 @@ export function BlogSection() {
                         </span>
                       </div>
                     )}
-                    
+
                     {/* Views */}
                     <div className="absolute top-4 right-4 flex items-center text-white/90 text-sm bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
                       <Eye className="w-4 h-4 mr-1" />
@@ -120,8 +122,8 @@ export function BlogSection() {
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center mr-3">
                         {blog.author?.profileImage ? (
-                          <img 
-                            src={blog.author.profileImage} 
+                          <img
+                            src={blog.author.profileImage}
                             alt={blog.author.name}
                             className="w-8 h-8 rounded-full"
                           />

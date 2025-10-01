@@ -11,14 +11,16 @@ interface BlogSidebarProps {
   }
 }
 
-export function BlogSidebar({ currentPost }: BlogSidebarProps) {
-  const recentPosts = getBlogPosts({ limit: 5 })
+export async function BlogSidebar({ currentPost }: BlogSidebarProps) {
+  const recentPosts = await getBlogPosts({ limit: 5 })
 
   return (
     <div className="space-y-8">
       {/* About Author */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900 mb-4">About the Author</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-4">
+          About the Author
+        </h3>
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-sm">JD</span>
@@ -29,11 +31,16 @@ export function BlogSidebar({ currentPost }: BlogSidebarProps) {
           </div>
         </div>
         <p className="text-slate-600 text-sm leading-relaxed mb-4">
-          Passionate about creating exceptional digital experiences with modern technologies. 
-          I write about web development, programming, and technology trends.
+          Passionate about creating exceptional digital experiences with modern
+          technologies. I write about web development, programming, and
+          technology trends.
         </p>
         <Link href="/#about">
-          <Button variant="outline" size="sm" className="w-full border-slate-300 text-slate-700">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full border-slate-300 text-slate-700"
+          >
             Learn More
           </Button>
         </Link>
@@ -46,8 +53,8 @@ export function BlogSidebar({ currentPost }: BlogSidebarProps) {
           Recent Posts
         </h3>
         <div className="space-y-3">
-          {recentPosts
-            .filter(post => !currentPost || post.id !== currentPost.id)
+          {recentPosts.data
+            .filter((post) => !currentPost || post.id !== currentPost.id)
             .slice(0, 4)
             .map((post) => (
               <Link
@@ -72,7 +79,11 @@ export function BlogSidebar({ currentPost }: BlogSidebarProps) {
             ))}
         </div>
         <Link href="/blog">
-          <Button variant="ghost" size="sm" className="w-full mt-3 text-slate-600 hover:text-slate-900">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full mt-3 text-slate-600 hover:text-slate-900"
+          >
             View All Posts
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
@@ -91,7 +102,7 @@ export function BlogSidebar({ currentPost }: BlogSidebarProps) {
             placeholder="Enter your email"
             className="w-full px-4 py-2 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50"
           />
-          <Button 
+          <Button
             type="submit"
             className="w-full bg-white text-purple-600 hover:bg-slate-100 font-semibold rounded-lg"
           >

@@ -3,7 +3,11 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getBlogPostBySlug, getRelatedPosts, calculateReadTime } from '@/lib/blog-data'
+import {
+  getBlogPostBySlug,
+  getRelatedPosts,
+  calculateReadTime,
+} from '@/lib/blog-data'
 import { BlogContent } from '@/app/components/blog/blog-content'
 import { BlogSidebar } from '@/app/components/blog/blog-sidebar'
 import { Button } from '@/components/ui/button'
@@ -16,9 +20,12 @@ interface BlogPostPageProps {
   }
 }
 
-export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
-  const post = getBlogPostBySlug(params.slug)
-  
+export async function generateMetadata({
+  params,
+}: BlogPostPageProps): Promise<Metadata> {
+  const {slug} = await params
+  const post = await getBlogPostBySlug(slug)
+
   if (!post) {
     return {
       title: 'Post Not Found',
@@ -40,15 +47,16 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
 export async function generateStaticParams() {
   const { getBlogPosts } = await import('@/lib/blog-data')
-  const posts = getBlogPosts()
-  
-  return posts.map((post) => ({
+  const posts = await getBlogPosts()
+
+  return posts.data.map((post) => ({
     slug: post.slug,
   }))
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const post = getBlogPostBySlug(params.slug)
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params
+  const post = (await getBlogPostBySlug(slug)).data
 
   if (!post) {
     notFound()
@@ -63,7 +71,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <Link href="/blog">
-              <Button variant="ghost" className="text-slate-300 hover:text-white mb-6 pl-0">
+              <Button
+                variant="ghost"
+                className="text-slate-300 hover:text-white mb-6 pl-0"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
               </Button>
@@ -75,7 +86,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 {new Date(post.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
-                  day: 'numeric'
+                  day: 'numeric',
                 })}
               </div>
               <div className="flex items-center">
@@ -84,7 +95,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
               <div className="flex items-center">
                 <Eye className="w-4 h-4 mr-2" />
-                {post.views.toLocaleString()} views
+                {post.views || 0} views
               </div>
             </div>
 
@@ -101,8 +112,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mr-4">
                   {post.author?.profileImage ? (
-                    <img 
-                      src={post.author.profileImage} 
+                    <img
+                      src={post.author.profileImage}
                       alt={post.author.name}
                       className="w-12 h-12 rounded-full"
                     />
@@ -120,8 +131,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                     {post.author?.email || 'Full Stack Developer'}
                   </div>
                 </div>
-              </div>            
-              
+              </div>
+
               <ShareButton post={post} />
             </div>
           </div>
@@ -139,7 +150,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   {/* Thumbnail */}
                   {post.thumbnail ? (
                     <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-1">
-                      <div 
+                      <div
                         className="bg-cover bg-center h-64"
                         style={{ backgroundImage: `url(${post.thumbnail})` }}
                       />
@@ -147,28 +158,37 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                   ) : (
                     <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-1">
                       <div className="bg-slate-800 h-64 flex items-center justify-center">
-                        <span className="text-white font-semibold">Blog Post Image</span>
+                        <span className="text-white font-semibold">
+                          Blog Post Image
+                        </span>
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Article Content */}
                   <div className="p-8">
                     <BlogContent content={post.content} />
-                    
+
                     {/* Additional Images */}
                     {post.images && post.images.length > 0 && (
                       <div className="mt-8">
-                        <h4 className="text-lg font-semibold text-slate-900 mb-4">Additional Images</h4>
+                        <h4 className="text-lg font-semibold text-slate-900 mb-4">
+                          Additional Images
+                        </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {post.images.map((image, index) => (
-                            <div key={index} className="bg-slate-100 rounded-lg p-4">
-                              <div 
+                            <div
+                              key={index}
+                              className="bg-slate-100 rounded-lg p-4"
+                            >
+                              <div
                                 className="bg-slate-300 h-48 rounded flex items-center justify-center bg-cover bg-center"
                                 style={{ backgroundImage: `url(${image})` }}
                               >
                                 {!image && (
-                                  <span className="text-slate-600 text-sm">Image {index + 1}</span>
+                                  <span className="text-slate-600 text-sm">
+                                    Image {index + 1}
+                                  </span>
                                 )}
                               </div>
                             </div>
@@ -195,24 +215,26 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   )
 }
 
-function RelatedPostsSection({ currentPostId }: { currentPostId: string }) {
-  const relatedPosts = getRelatedPosts(currentPostId, 3)
+async function RelatedPostsSection({ currentPostId }: { currentPostId: string }) {
+  const relatedPosts = await getRelatedPosts(currentPostId, 3)
 
   if (relatedPosts.length === 0) return null
 
   return (
     <section className="mt-12">
-      <h3 className="text-2xl font-bold text-slate-900 mb-6">Related Articles</h3>
+      <h3 className="text-2xl font-bold text-slate-900 mb-6">
+        Related Articles
+      </h3>
       <div className="grid md:grid-cols-3 gap-6">
-        {relatedPosts.map((post) => (
-          <Link 
+        {relatedPosts.data.map((post) => (
+          <Link
             key={post.id}
             href={`/blog/${post.slug}`}
             className="block group"
           >
             <div className="bg-white rounded-lg border border-slate-200 p-4 hover:border-purple-300 transition-colors duration-300 h-full">
               {post.thumbnail && (
-                <div 
+                <div
                   className="w-full h-32 bg-cover bg-center rounded-lg mb-3"
                   style={{ backgroundImage: `url(${post.thumbnail})` }}
                 />
