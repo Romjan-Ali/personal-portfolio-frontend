@@ -1,15 +1,15 @@
 // lib/blog-data.ts
-import { 
-  calculateReadTime, 
-  extractTags, 
-  generateSlug, 
+import {
+  calculateReadTime,
+  extractTags,
+  generateSlug,
   formatBlogDate,
   getBlogPostBySlug as getBlogPostBySlugUtil,
   getRelatedPosts as getRelatedPostsUtil,
   getPostsByTag as getPostsByTagUtil,
   searchPosts as searchPostsUtil,
   getPopularPosts as getPopularPostsUtil,
-  getAllTags as getAllTagsUtil
+  getAllTags as getAllTagsUtil,
 } from './blog-utils'
 
 export interface BlogPost {
@@ -67,24 +67,29 @@ async function fetchFromAPI(endpoint: string, options?: RequestInit) {
 }
 
 // Main data functions
-export async function getBlogPosts(options?: { 
-  featured?: boolean; 
-  limit?: number;
-  tag?: string;
-  published?: boolean;
+export async function getBlogPosts(options?: {
+  featured?: boolean
+  limit?: number
+  search?: string
+  tag?: string
+  published?: boolean
+  page?: number
 }) {
   try {
     // Build query parameters
     const params = new URLSearchParams()
-    
+
     if (options?.featured) params.append('featured', 'true')
     if (options?.limit) params.append('limit', options.limit.toString())
     if (options?.tag) params.append('tag', options.tag)
+    if (options?.search) params.append('search', options.search)
     if (options?.published !== false) params.append('published', 'true')
+    if (options?.page) params.append('page', options.page.toString())
 
     const endpoint = `/blogs${params.toString() ? `?${params.toString()}` : ''}`
+    console.log({ endpoint })
     const data = await fetchFromAPI(endpoint)
-    
+
     return data.blogs || data || []
   } catch (error) {
     console.error('Failed to fetch blog posts:', error)
@@ -103,32 +108,17 @@ export async function getBlogPostBySlug(slug: string) {
   }
 }
 
-export async function getRelatedPosts(currentPostId: string, limit: number = 3) {
+export async function getRelatedPosts(
+  currentPostId: string,
+  limit: number = 3
+) {
   try {
-    const data = await fetchFromAPI(`/blogs/${currentPostId}/related?limit=${limit}`)
+    const data = await fetchFromAPI(
+      `/blogs/${currentPostId}/related?limit=${limit}`
+    )
     return data.relatedPosts || data || []
   } catch (error) {
     console.error(`Failed to fetch related posts for ${currentPostId}:`, error)
-    return []
-  }
-}
-
-export async function getPostsByTag(tag: string) {
-  try {
-    const data = await fetchFromAPI(`/blogs/tag/${encodeURIComponent(tag)}`)
-    return data.blogs || data || []
-  } catch (error) {
-    console.error(`Failed to fetch posts by tag ${tag}:`, error)
-    return []
-  }
-}
-
-export async function searchPosts(query: string) {
-  try {
-    const data = await fetchFromAPI(`/blogs/search?q=${encodeURIComponent(query)}`)
-    return data.blogs || data || []
-  } catch (error) {
-    console.error(`Failed to search posts with query ${query}:`, error)
     return []
   }
 }
@@ -150,6 +140,16 @@ export async function getAllTags() {
   } catch (error) {
     console.error('Failed to fetch all tags:', error)
     return []
+  }
+}
+
+export async function getTotalViews() {
+  try {
+    const data = await fetchFromAPI('/blogs/total-views')
+    return data.totalViews || data || 0
+  } catch (error) {
+    console.error('Failed to get total views', error)
+    return { data: 0 }
   }
 }
 
@@ -176,7 +176,10 @@ export async function createBlogPost(blogData: Partial<BlogPost>) {
   }
 }
 
-export async function updateBlogPost(slug: string, blogData: Partial<BlogPost>) {
+export async function updateBlogPost(
+  slug: string,
+  blogData: Partial<BlogPost>
+) {
   try {
     const data = await fetchFromAPI(`/blogs/${slug}`, {
       method: 'PUT',
@@ -214,9 +217,4 @@ export function formatBlogDateLocal(date: string): string {
 }
 
 // Re-export utilities
-export { 
-  calculateReadTime, 
-  extractTags, 
-  generateSlug, 
-  formatBlogDate 
-}
+export { calculateReadTime, extractTags, generateSlug, formatBlogDate }

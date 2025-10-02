@@ -1,41 +1,70 @@
 // app/blog/page.tsx
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { getBlogPosts, getAllTags, getPostsByTag, searchPosts, calculateReadTime, extractTags, BlogPost } from '@/lib/blog-data'
+import {
+  getBlogPosts,
+  getAllTags,
+  calculateReadTime,
+  extractTags,
+  BlogPost,
+  getTotalViews,
+} from '@/lib/blog-data'
 import { BlogCard } from '@/app/components/blog/blog-card'
 import { BlogSearch } from '@/app/components/blog/blog-search'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, ArrowRight, Search, Plus } from 'lucide-react'
+import Pagination from '../components/blog/pagination'
 
 export const metadata: Metadata = {
   title: 'Blog - John Doe',
-  description: 'Read my latest articles on web development, programming, and technology trends.',
+  description:
+    'Read my latest articles on web development, programming, and technology trends.',
 }
 
 interface BlogPageProps {
   searchParams: {
     tag?: string
     search?: string
+    page?: string
   }
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const postsResult = await getBlogPosts()
-  const posts = postsResult.data
+  const { tag, search, page } = await searchParams
 
-  const tagsResult = await getAllTags()
-  const tags = tagsResult.data
-  
+  const { data: posts, pagination } = await getBlogPosts({
+    limit: 12,
+    page: page ? parseInt(page) : 1,
+  })
+
+  const { data: totalViews } = await getTotalViews()
+
+  const { data: tags } = await getAllTags()
+
+  console.log({ searchParams: await searchParams })
+
   // Filter posts based on search params using the utility functions
   let filteredPosts = posts
-  if (searchParams.tag) {
-    filteredPosts = await getPostsByTag(searchParams.tag)
-  } else if (searchParams.search) {
-    filteredPosts = await searchPosts(searchParams.search)
+  let filteredPagination = pagination
+
+  if (tag) {
+    const { data: posts, pagination } = await getBlogPosts({
+      tag,
+      page: page ? parseInt(page) : 1,
+    })
+    filteredPosts = posts
+    filteredPagination = pagination
+  } else if (search) {
+    const { data: posts, pagination } = await getBlogPosts({
+      search,
+      page: page ? parseInt(page) : 1,
+    })
+    filteredPosts = posts
+    filteredPagination = pagination
   }
 
   // Use the first post as featured when no filters are applied
-  const featuredPost = !searchParams.tag && !searchParams.search ? posts[0] : null
+  const featuredPost = !tag && !search ? posts[0] : null
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20">
@@ -56,13 +85,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             <div className="flex justify-center space-x-8 text-slate-300">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">
-                  {posts.length}
+                  {pagination.total}
                 </div>
                 <div className="text-sm">Articles</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">
-                  {posts.reduce((total: number, post: BlogPost) => total + post.views, 0).toLocaleString()}
+                  {totalViews || 0}
                 </div>
                 <div className="text-sm">Total Views</div>
               </div>
@@ -145,9 +174,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   <div className="relative">
                     <div className="bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl p-1">
                       {featuredPost.thumbnail ? (
-                        <div 
+                        <div
                           className="bg-slate-800 rounded-xl h-64 bg-cover bg-center"
-                          style={{ backgroundImage: `url(${featuredPost.thumbnail})` }}
+                          style={{
+                            backgroundImage: `url(${featuredPost.thumbnail})`,
+                          }}
                         />
                       ) : (
                         <div className="bg-slate-800 rounded-xl h-64 flex items-center justify-center">
@@ -171,30 +202,26 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           <div className="max-w-6xl mx-auto">
             {/* Search and Filters */}
             <div className="mb-8">
-              <BlogSearch
-                tags={tags}
-                initialSearch={searchParams.search}
-                initialTag={searchParams.tag}
-              />
+              <BlogSearch tags={tags} initialSearch={search} initialTag={tag} />
             </div>
 
             {/* Results Info */}
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl font-bold text-slate-900">
-                  {searchParams.tag
-                    ? `Tag: "${searchParams.tag}"`
-                    : searchParams.search
-                    ? `Search: "${searchParams.search}"`
+                  {tag
+                    ? `Tag: "${tag}"`
+                    : search
+                    ? `Search: "${search}"`
                     : 'All Articles'}
                 </h2>
                 <p className="text-slate-600 mt-1">
-                  {filteredPosts.length} article
-                  {filteredPosts.length !== 1 ? 's' : ''} found
+                  {filteredPagination.total} article
+                  {filteredPagination.total !== 1 ? 's' : ''} found
                 </p>
               </div>
 
-              {(searchParams.tag || searchParams.search) && (
+              {(tag || search) && (
                 <Link href="/blog">
                   <Button variant="outline" className="border-slate-300">
                     Clear Filters
@@ -205,11 +232,14 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
             {/* Blog Grid */}
             {filteredPosts.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredPosts.map((post: BlogPost) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
-              </div>
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredPosts.map((post: BlogPost) => (
+                    <BlogCard key={post.id} post={post} />
+                  ))}
+                </div>
+                <Pagination pagination={filteredPagination} />
+              </>
             ) : (
               <div className="text-center py-12">
                 <Search className="w-16 h-16 text-slate-400 mx-auto mb-4" />

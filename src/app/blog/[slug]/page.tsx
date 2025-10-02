@@ -151,7 +151,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   {post.thumbnail ? (
                     <div className="bg-gradient-to-br from-purple-400 to-pink-400 p-1">
                       <div
-                        className="bg-cover bg-center h-64"
+                        className="bg-cover bg-center h-64 rounded-t-2xl"
                         style={{ backgroundImage: `url(${post.thumbnail})` }}
                       />
                     </div>

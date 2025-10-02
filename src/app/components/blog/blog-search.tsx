@@ -27,6 +27,7 @@ export function BlogSearch({
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (selectedTag) params.set('tag', selectedTag)
+      console.log({params})
     router.push(`/blog?${params.toString()}`)
   }
 
@@ -114,7 +115,7 @@ export function BlogSearch({
           <span className="text-slate-600">Active filters:</span>
           {search && (
             <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center">
-              Search: &quote;{search}&quote;
+              Search: {search}
               <button
                 onClick={() => {
                   setSearch('')

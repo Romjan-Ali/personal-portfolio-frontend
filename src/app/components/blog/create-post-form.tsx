@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { demoUser, getBlogPosts } from '@/lib/blog-data'
+import { getBlogPosts } from '@/lib/blog-data'
 import { ArrowLeft, Save, Eye, EyeOff, Upload, X } from 'lucide-react'
 
 interface CreatePostFormProps {
