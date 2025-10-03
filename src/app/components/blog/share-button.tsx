@@ -22,7 +22,7 @@ export function ShareButton({ post }: { post: BlogPost }) {
   return (
     <Button
       variant="outline"
-      className="border-slate-600 text-slate-300 hover:bg-slate-800"
+      className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-purple-300 dark:hover:border-purple-600 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-all duration-300 backdrop-blur-sm"
       onClick={handleShare}
     >
       <Share2 className="w-4 h-4 mr-2" />

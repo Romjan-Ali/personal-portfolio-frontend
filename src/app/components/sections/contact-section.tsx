@@ -9,7 +9,6 @@ import {
   Send,
   Github,
   Linkedin,
-  Twitter,
   Facebook,
 } from 'lucide-react'
 import Link from 'next/link'

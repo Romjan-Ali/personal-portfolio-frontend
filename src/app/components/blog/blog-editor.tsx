@@ -1,7 +1,7 @@
 // components/blog-editor.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useBlogManagement } from '@/hooks/use-blog-management'
 import { Blog } from '@/services/blog-service'

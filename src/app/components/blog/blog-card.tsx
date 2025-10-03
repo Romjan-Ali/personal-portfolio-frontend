@@ -67,28 +67,6 @@ export function BlogCard({ post }: BlogCardProps) {
           {post.summary}
         </p>
 
-        {/* Author */}
-        {post.author && (
-          <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center mr-3">
-              {post.author.profileImage ? (
-                <img 
-                  src={post.author.profileImage} 
-                  alt={post.author.name}
-                  className="w-8 h-8 rounded-full"
-                />
-              ) : (
-                <span className="text-xs font-bold text-slate-600">
-                  {post.author.name?.charAt(0)}
-                </span>
-              )}
-            </div>
-            <span className="text-sm text-slate-700 font-medium">
-              {post.author.name}
-            </span>
-          </div>
-        )}
-
         {/* Tags */}
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
