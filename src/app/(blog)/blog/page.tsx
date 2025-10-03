@@ -13,7 +13,7 @@ import { BlogCard } from '@/app/components/blog/blog-card'
 import { BlogSearch } from '@/app/components/blog/blog-search'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, ArrowRight, Search, Plus } from 'lucide-react'
-import Pagination from '../components/blog/pagination'
+import Pagination from '../../components/blog/pagination'
 
 export const metadata: Metadata = {
   title: 'Blog - John Doe',

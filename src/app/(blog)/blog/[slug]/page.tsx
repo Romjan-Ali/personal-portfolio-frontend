@@ -14,7 +14,6 @@ import { BlogSidebar } from '@/app/components/blog/blog-sidebar'
 import { Button } from '@/components/ui/button'
 import { Calendar, Clock, ArrowLeft, Eye, FileText } from 'lucide-react'
 import { ShareButton } from '@/app/components/blog/share-button'
-import { ImgProps } from 'next/dist/shared/lib/get-img-props'
 
 interface BlogPostPageProps {
   params: {
