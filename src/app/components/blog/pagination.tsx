@@ -12,7 +12,7 @@ const Pagination = ({ pagination }: { pagination: { pages: number } }) => {
     const params = new URLSearchParams()
     params.set('page', currentPage.toString())
     router.push(`/blog?${params.toString()}`)
-  }, [currentPage])
+  }, [currentPage, router])
 
   return (
     <SmartPagination

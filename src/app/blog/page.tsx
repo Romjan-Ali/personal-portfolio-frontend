@@ -67,36 +67,42 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const featuredPost = !tag && !search ? posts[0] : null
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-800 transition-colors duration-300">
       {/* Header */}
-      <section className="bg-slate-900 text-white py-20">
+      <section
+        className="relative pt-30 py-20 text-slate-900 dark:text-slate-100
+             bg-gradient-to-r from-purple-50 via-slate-50 to-pink-50
+             dark:from-slate-950 dark:via-slate-900 dark:to-purple-950
+             transition-colors duration-500"
+      >
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(168,85,247,0.2),transparent_70%)] dark:bg-[radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.15),transparent_70%)]"></div>
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 text-slate-600 dark:text-slate-300">
               Blog & Articles
             </h1>
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
               Insights, tutorials, and thoughts on web development, programming,
               and the latest technology trends from my journey as a developer.
             </p>
-            <div className="w-24 h-1 bg-purple-400 mx-auto mb-8"></div>
+            <div className="w-24 h-1 bg-purple-500 mx-auto mb-8"></div>
 
             {/* Stats */}
-            <div className="flex justify-center space-x-8 text-slate-300">
+            <div className="flex justify-center space-x-8 text-slate-600 dark:text-slate-300">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {pagination.total}
                 </div>
                 <div className="text-sm">Articles</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {totalViews || 0}
                 </div>
                 <div className="text-sm">Total Views</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
                   {tags.length}
                 </div>
                 <div className="text-sm">Topics</div>
@@ -106,7 +112,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             {/* Add Create Button for Admin */}
             <div className="mt-8">
               <Link href="/blog/create">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full">
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full transition-colors duration-300">
                   <Plus className="w-5 h-5 mr-2" />
                   Write New Post
                 </Button>
@@ -118,22 +124,27 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
       {/* Featured Post */}
       {featuredPost && (
-        <section className="py-12 bg-white border-b border-slate-200">
+        <section
+          className="py-12 border-b border-slate-200 dark:border-slate-700 transition-colors duration-300
+    bg-gradient-to-r from-white to-purple-50 dark:from-slate-900 dark:to-slate-800"
+        >
+          {/* Changed background to gradient for both light and dark mode */}
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-slate-900">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white transition-colors duration-300">
                   Featured Article
                 </h2>
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                <span className="bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 px-3 py-1 rounded-full text-sm font-medium transition-colors duration-300">
                   Featured
                 </span>
               </div>
 
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-8 border border-purple-100 dark:border-slate-700 transition-colors duration-300">
+                {/* Applied dark mode gradient and transition */}
                 <div className="grid lg:grid-cols-2 gap-8 items-center">
                   <div>
-                    <div className="flex items-center space-x-4 text-slate-600 mb-4">
+                    <div className="flex items-center space-x-4 text-slate-600 dark:text-slate-300 mb-4 transition-colors duration-300">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 mr-2" />
                         {new Date(featuredPost.createdAt).toLocaleDateString()}
@@ -144,11 +155,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       </div>
                     </div>
 
-                    <h3 className="text-3xl font-bold text-slate-900 mb-4">
+                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 transition-colors duration-300">
                       {featuredPost.title}
                     </h3>
 
-                    <p className="text-slate-600 mb-6 text-lg leading-relaxed">
+                    <p className="text-slate-600 dark:text-slate-300 mb-6 text-lg leading-relaxed transition-colors duration-300">
                       {featuredPost.summary}
                     </p>
 
@@ -156,7 +167,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                       {extractTags(featuredPost.content).map((tag, index) => (
                         <span
                           key={index}
-                          className="bg-white text-slate-700 px-3 py-1 rounded-full text-sm border border-slate-300"
+                          className="bg-white text-slate-700 dark:bg-slate-700 dark:text-slate-100 px-3 py-1 rounded-full text-sm border border-slate-300 dark:border-slate-600 transition-colors duration-300"
                         >
                           {tag}
                         </span>
@@ -164,7 +175,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     </div>
 
                     <Link href={`/blog/${featuredPost.slug}`}>
-                      <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full">
+                      <Button className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white px-6 py-3 rounded-full transition-colors duration-300">
                         Read Full Article
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
@@ -172,16 +183,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   </div>
 
                   <div className="relative">
-                    <div className="bg-gradient-to-br from-purple-400 to-pink-400 rounded-xl p-1">
+                    <div className="bg-gradient-to-br from-purple-400 to-pink-400 dark:from-purple-700 dark:to-purple-900 rounded-xl p-1 transition-colors duration-300">
                       {featuredPost.thumbnail ? (
                         <div
-                          className="bg-slate-800 rounded-xl h-64 bg-cover bg-center"
+                          className="bg-slate-800 dark:bg-slate-900 rounded-xl h-64 bg-cover bg-center transition-colors duration-300"
                           style={{
                             backgroundImage: `url(${featuredPost.thumbnail})`,
                           }}
                         />
                       ) : (
-                        <div className="bg-slate-800 rounded-xl h-64 flex items-center justify-center">
+                        <div className="bg-slate-800 dark:bg-slate-900 rounded-xl h-64 flex items-center justify-center transition-colors duration-300">
                           <span className="text-white font-semibold">
                             Featured Image
                           </span>

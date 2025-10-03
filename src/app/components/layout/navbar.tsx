@@ -72,7 +72,7 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg border-b border-slate-200 dark:border-slate-700'
-          : 'bg-transparent'
+          : 'bg-transparent dark:bg-gradient-to-b dark:from-slate-900/50 dark:to-slate-900/30'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -84,14 +84,16 @@ export function Navbar() {
             className="flex items-center space-x-2 group"
           >
             <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">JD</span>
+              <span className="text-white font-bold text-sm">RA</span>
             </div>
             <span
               className={`font-bold text-lg transition-colors duration-300 ${
-                isScrolled ? 'text-slate-900 dark:text-white' : 'text-white'
+                isScrolled
+                  ? 'text-slate-900 dark:text-white'
+                  : 'text-slate-700 dark:text-slate-100'
               } group-hover:text-purple-600 dark:group-hover:text-purple-400`}
             >
-              John Doe
+              Romjan Ali
             </span>
           </Link>
 
@@ -101,15 +103,12 @@ export function Navbar() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`relative font-medium transition-all duration-300 ${
-                  isScrolled
-                    ? 'text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                    : 'text-white/90 hover:text-white'
-                } ${
-                  activeSection === item.href.replace('#', '')
-                    ? 'text-purple-600 dark:text-purple-400 font-semibold'
-                    : ''
-                }`}
+                className={`relative font-medium transition-all duration-300 text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400
+                 ${
+                   activeSection === item.href.replace('#', '')
+                     ? 'text-purple-600 dark:text-purple-400 font-semibold'
+                     : ''
+                 }`}
               >
                 {item.name}
                 {activeSection === item.href.replace('#', '') && (
@@ -123,11 +122,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             <button
               onClick={toggleDarkMode}
-              className={`p-2 rounded-lg transition-all duration-300 ${
-                isScrolled
-                  ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  : 'text-white/90 hover:bg-white/10'
-              }`}
+              className="p-2 rounded-lg transition-all duration-300 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               {darkMode ? (
                 <Sun className="w-5 h-5" />
@@ -138,11 +133,7 @@ export function Navbar() {
 
             <Button
               onClick={() => scrollToSection('#contact')}
-              className={`rounded-full transition-all duration-300 ${
-                isScrolled
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-slate-900 border border-white/30'
-              }`}
+              className="rounded-full transition-all duration-300 bg-purple-600 hover:bg-purple-700 text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               Resume
@@ -206,10 +197,10 @@ export function Navbar() {
                   scrollToSection('#contact')
                   setIsOpen(false)
                 }}
-                className={`flex-1 rounded-full transition-all duration-300 ${
+                className={`flex-1 rounded-full transition-colors duration-300 ${
                   isScrolled
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white hover:text-slate-900 border border-white/30'
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600 dark:text-white'
+                    : 'bg-slate-100/70 backdrop-blur-sm text-slate-900 hover:bg-white hover:text-slate-900 border border-slate-300 dark:bg-slate-800/20 dark:text-white dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-600'
                 }`}
               >
                 <Download className="w-4 h-4 mr-2" />

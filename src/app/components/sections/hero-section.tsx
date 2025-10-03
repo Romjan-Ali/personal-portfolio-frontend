@@ -7,7 +7,12 @@ import Link from 'next/link'
 
 export function HeroSection() {
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden max-2xl:pt-20 max-2xl:pb-14">
+    <section
+      className="min-h-screen flex items-center justify-center 
+  bg-gradient-to-br from-slate-50 via-purple-100 to-slate-50 
+  dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 
+  relative overflow-hidden max-2xl:pt-30 max-2xl:pb-14 transition-colors duration-300"
+    >
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
@@ -32,17 +37,17 @@ export function HeroSection() {
           </div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300">
           Romjan Ali
         </h1>
 
-        <div className="text-xl md:text-2xl text-gray-300 mb-8">
+        <div className="ext-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8">
           <span className="typing-animation">
             Full Stack Developer & UI/UX Enthusiast
           </span>
         </div>
 
-        <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
           I create exceptional digital experiences with modern technologies.
           Passionate about clean code, user-centric design, and innovative
           solutions.
@@ -68,7 +73,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="border-white text-slate-600 hover:bg-white hover:text-slate-900 px-8 py-3 rounded-full font-semibold"
+              className="border-gray-700 dark:border-white text-gray-700 dark:text-white hover:bg-gray-100 hover:text-gray-900 dark:hover:text-white px-8 py-3 rounded-full font-semibold"
             >
               Get In Touch
               <ArrowDown className="ml-2 w-4 h-4" />
@@ -79,19 +84,19 @@ export function HeroSection() {
         <div className="flex justify-center space-x-6">
           <a
             href="https://github.com"
-            className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Github className="w-6 h-6" />
           </a>
           <a
             href="https://linkedin.com"
-            className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Linkedin className="w-6 h-6" />
           </a>
           <a
             href="mailto:john@example.com"
-            className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+            className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Mail className="w-6 h-6" />
           </a>

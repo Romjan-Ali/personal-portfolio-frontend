@@ -13,14 +13,18 @@ export function AboutSection() {
   
 
   return (
-    <section id="about" className="py-20 bg-slate-50">
-      <div className="container mx-auto px-4">
+    <section id="about" className="py-20 relative overflow-hidden 
+      bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 
+      dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
+ <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+    <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+      <div className="relative container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             About Me
           </h2>
           <div className="w-24 h-1 bg-purple-600 mx-auto mb-6"></div>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Passionate developer crafting digital solutions that make a difference
           </p>
         </div>
@@ -45,15 +49,15 @@ export function AboutSection() {
           {/* Content Section */}
           <div className="space-y-6">
             <div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">
                 Crafting Digital Excellence
               </h3>
-              <p className="text-slate-600 leading-relaxed mb-4">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
                 Hello! I&apos;m John Doe, a passionate Full Stack Developer with over 3 years of experience 
                 creating web applications that solve real-world problems. I specialize in modern 
                 JavaScript frameworks and love turning complex ideas into beautiful, functional code.
               </p>
-              <p className="text-slate-600 leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                 When I&apos;m not coding, you can find me exploring new technologies, contributing to 
                 open-source projects, or sharing my knowledge through blog posts and tutorials.
               </p>
@@ -62,20 +66,20 @@ export function AboutSection() {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-6 py-6">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center p-4 bg-white rounded-lg shadow-sm border border-slate-200">
+                <div key={index} className="text-center p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
                   <div className="text-2xl font-bold text-purple-600 mb-1">{stat.number}</div>
-                  <div className="text-sm text-slate-600">{stat.label}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">{stat.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Personal Info */}
             <div className="space-y-3">
-              <div className="flex items-center text-slate-600">
+              <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <MapPin className="w-5 h-5 mr-3 text-purple-600" />
                 <span>New York, NY</span>
               </div>
-              <div className="flex items-center text-slate-600">
+              <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <Calendar className="w-5 h-5 mr-3 text-purple-600" />
                 <span>Available for freelance work</span>
               </div>
@@ -86,7 +90,7 @@ export function AboutSection() {
                 <Download className="w-4 h-4 mr-2" />
                 Download CV
               </Button>
-              <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-100 px-8 py-3 rounded-full">
+              <Button variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 px-8 py-3 rounded-full transition-colors duration-300">
                 View My Story
               </Button>
             </div>
