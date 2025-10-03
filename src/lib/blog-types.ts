@@ -24,6 +24,13 @@ export interface BlogPost extends CreateBlogPost {
   }
 }
 
+export interface PageInfo {
+  limit: number
+  page: number
+  pages: number
+  total: number
+}
+
 // Validation schema
 export const blogPostValidation = {
   title: {
