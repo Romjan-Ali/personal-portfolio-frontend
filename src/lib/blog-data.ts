@@ -233,6 +233,8 @@ export async function createBlogPost(blogData: Partial<BlogPost>, token?: string
   }
 }
 
+
+
 export async function updateBlogPost(
   slug: string,
   blogData: Partial<BlogPost>
@@ -249,13 +251,24 @@ export async function updateBlogPost(
   }
 }
 
-export async function deleteBlogPost(slug: string) {
+export async function deleteBlogPost(id: string, token?: string) {
   try {
-    await fetchFromAPI(`/blogs/${slug}`, {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const data = await fetchFromAPI(`/blogs/${id}`, {
       method: 'DELETE',
+      headers,
     })
+    
+    return data.blog || data
   } catch (error) {
-    console.error(`Failed to delete blog post ${slug}:`, error)
+    console.error(`Failed to delete blog post ${id}:`, error)
     throw error
   }
 }

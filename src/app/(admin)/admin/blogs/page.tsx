@@ -32,6 +32,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
+import { updateBlogPost, deleteBlogPost } from '@/lib/blog-data'
+import { useSession } from 'next-auth/react'
 
 interface Blog {
   id: string
@@ -63,6 +65,7 @@ const BlogPage = () => {
   const totalPublished = useRef<number>(0)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { data: session } = useSession()
 
   useEffect(() => {
     loadBlogs()
@@ -165,16 +168,16 @@ const BlogPage = () => {
     }
   }
 
-  /* const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this blog post?')) return
 
     try {
-      await blogAPI.deleteBlog(id)
+      await deleteBlogPost(id, session?.accessToken)
       setBlogs(blogs.filter((blog) => blog.id !== id))
     } catch (error: any) {
       setError(error.message)
     }
-  } */
+  }
 
   /* const togglePublish = async (id: string, currentStatus: boolean) => {
     try {
@@ -283,7 +286,7 @@ const BlogPage = () => {
           </>
         )}
 
-        {filteredBlogs.map((blog) => (
+        {blogs.map((blog) => (
           <Card
             key={blog.id}
             className="border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300"
@@ -378,7 +381,7 @@ const BlogPage = () => {
                     variant="ghost"
                     size="icon"
                     className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    // onClick={() => handleDelete(blog.id)}
+                    onClick={() => handleDelete(blog.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -389,7 +392,7 @@ const BlogPage = () => {
         ))}
       </div>
 
-      {filteredBlogs.length === 0 && (
+      {blogs.length === 0 && (
         <Card className="border-slate-200 dark:border-slate-700">
           <CardContent className="p-12 text-center">
             <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
