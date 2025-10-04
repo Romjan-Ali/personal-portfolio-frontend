@@ -10,8 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { ArrowLeft, Save, Eye } from 'lucide-react'
 import Link from 'next/link'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
+import { createBlogPost } from '@/lib/blog-data'
+import { useSession } from 'next-auth/react'
 
-export default function CreateBlogPage() {
+
+const CreateBlogPage = () => {
   const router = useRouter()
   const [formData, setFormData] = useState({
     title: '',
@@ -23,12 +27,19 @@ export default function CreateBlogPage() {
     tags: [] as string[],
   })
   const [currentTag, setCurrentTag] = useState('')
+  const { data: session } = useSession()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // Add API call here
-    console.log('Creating blog post:', formData)
-    router.push('/admin')
+    try {
+      const result = await createBlogPost(formData, session?.accessToken)
+      if(result.success){
+        router.replace('/admin/blogs')
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const addTag = () => {
@@ -276,3 +287,5 @@ export default function CreateBlogPage() {
     </div>
   )
 }
+
+export default withAuth(CreateBlogPage, { requiredRole: 'ADMIN' })

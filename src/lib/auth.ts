@@ -26,10 +26,15 @@ export const authOptions: AuthOptions = {
 
           if (!res.ok || !data.success) return null;
 
-          // Return the user data that NextAuth will store in the session
+          console.log("data.data.token", data.data.token)
+
+          // Return user data with accessToken at the root level
           return {
-            ...data.data.user,
-            accessToken: data.data.token,
+            id: data.data.user.id,
+            name: data.data.user.name,
+            email: data.data.user.email,
+            role: data.data.user.role,
+            accessToken: data.data.token, // Store at root level
           };
         } catch (err) {
           console.error("Authorize error:", err);
@@ -39,27 +44,25 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
-  // Save token and user info
   callbacks: {
     async jwt({ token, user }) {
+      // Initial sign in
       if (user) {
         token.accessToken = user.accessToken;
         token.id = user.id;
         token.role = user.role;
-        token.name = user.name;
-        token.email = user.email;
       }
       return token;
     },
 
     async session({ session, token }) {
       session.user = {
-        id: token.id,
-        name: token.name,
-        email: token.email,
-        role: token.role,
+        id: token.id as string,
+        name: token.name as string,
+        email: token.email as string,
+        role: token.role as string,
       };
-      session.accessToken = token.accessToken;
+      session.accessToken = token.accessToken as string;
       return session;
     },
   },
