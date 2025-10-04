@@ -16,6 +16,7 @@ import {
   Star,
   Briefcase,
 } from 'lucide-react'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
 
 // Mock data - replace with actual API calls
 const mockProjects = [
@@ -51,7 +52,7 @@ const mockProjects = [
   },
 ]
 
-export default function ProjectsPage() {
+const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [projects, setProjects] = useState(mockProjects)
 
@@ -264,3 +265,5 @@ export default function ProjectsPage() {
     </div>
   )
 }
+
+export default withAuth(ProjectsPage, { requiredRole: 'ADMIN' })

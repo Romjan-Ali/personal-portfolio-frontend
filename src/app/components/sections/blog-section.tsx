@@ -10,7 +10,7 @@ import {
 } from '@/lib/blog-data'
 
 export async function BlogSection() {
-  const blogs = await getBlogPosts({ limit: 3 })
+  const {data: blogs} = await getBlogPosts({ limit: 3 })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -35,7 +35,7 @@ export async function BlogSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {blogs?.data.map((blog: BlogPost) => {
+          {blogs?.map((blog: BlogPost) => {
             const readTime = calculateReadTime(blog.content)
             const tags = extractTags(blog.content)
 

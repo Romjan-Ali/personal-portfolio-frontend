@@ -28,7 +28,7 @@ export default function CreateBlogPage() {
     e.preventDefault()
     // Add API call here
     console.log('Creating blog post:', formData)
-    router.push('/admin/blogs')
+    router.push('/admin')
   }
 
   const addTag = () => {
@@ -52,7 +52,7 @@ export default function CreateBlogPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/blogs">
+          <Link href="/admin">
             <Button
               variant="ghost"
               size="icon"

@@ -1,34 +1,63 @@
 // app/admin/login/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/app/components/auth/auth-provider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { getSession, signIn } from 'next-auth/react'
+import Loading from '@/app/components/loading'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+const LoginPage = () => {
+  const [email, setEmail] = useState('admin@example.com')
+  const [password, setPassword] = useState('hashedPassword')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isComponentLoading, setIsComponentLoading] = useState(true)
   const [error, setError] = useState('')
-  const { login } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const session = await getSession()
+      console.log({session})
+      if (session?.user?.role === 'ADMIN') {
+        router.push('/admin')
+      }
+      setIsComponentLoading(false)
+    }
+    checkSession()
+  }, [router])
+
+  if(isComponentLoading) {
+    return <Loading />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    try {
+      const res = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      })
 
-    const success = await login(email, password)
-    if (!success) {
-      setError('Invalid email or password')
+      if (res?.error) {
+        console.log('res.error', res.error)
+        setError('Invalid email or password')
+      } else {
+        router.push('/admin') // redirect after successful login
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   console.log('login')
@@ -144,3 +173,5 @@ export default function LoginPage() {
     </div>
   )
 }
+
+export default LoginPage

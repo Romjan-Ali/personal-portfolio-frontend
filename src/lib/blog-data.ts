@@ -89,6 +89,7 @@ export async function getBlogPosts(options?: {
     const endpoint = `/blogs${params.toString() ? `?${params.toString()}` : ''}`
     console.log({ endpoint })
     const data = await fetchFromAPI(endpoint)
+    console.log({data})
 
     return data.blogs || data || []
   } catch (error) {

@@ -26,10 +26,12 @@ import {
   BlogPost,
   getTotalViews,
 } from '@/lib/blog-data'
-import { useAuth } from '@/app/components/auth/auth-provider'
 import SmartPagination from '@/components/smart-pagination'
 import { PageInfo } from '@/lib/blog-types'
 import { Skeleton } from '@/components/ui/skeleton'
+import { signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
 
 interface Blog {
   id: string
@@ -46,7 +48,7 @@ interface Blog {
   tags: string[]
 }
 
-export default function BlogsPage() {
+const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [blogs, setBlogs] = useState<Blog[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -60,7 +62,7 @@ export default function BlogsPage() {
   })
   const totalPublished = useRef<number>(0)
   const [error, setError] = useState('')
-  const { logout } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     loadBlogs()
@@ -92,7 +94,13 @@ export default function BlogsPage() {
       if (typeof error === 'object' && error !== null && 'message' in error) {
         setError((error as { message: string }).message)
         if ((error as { message: string }).message === 'Unauthorized') {
-          logout()
+          await signOut({
+            redirect: false,
+            callbackUrl: '/admin/login',
+          })
+          // Redirect after sign out
+          router.push('/admin/login')
+          router.refresh() // Refresh the router to update the session state
         }
       } else {
         setError('An unknown error occurred')
@@ -117,7 +125,13 @@ export default function BlogsPage() {
       if (typeof error === 'object' && error !== null && 'message' in error) {
         setError((error as { message: string }).message)
         if ((error as { message: string }).message === 'Unauthorized') {
-          logout()
+          await signOut({
+            redirect: false,
+            callbackUrl: '/admin/login',
+          })
+          // Redirect after sign out
+          router.push('/admin/login')
+          router.refresh() // Refresh the router to update the session state
         }
       } else {
         setError('An unknown error occurred')
@@ -137,7 +151,13 @@ export default function BlogsPage() {
       if (typeof error === 'object' && error !== null && 'message' in error) {
         setError((error as { message: string }).message)
         if ((error as { message: string }).message === 'Unauthorized') {
-          logout()
+          await signOut({
+            redirect: false,
+            callbackUrl: '/admin/login',
+          })
+          // Redirect after sign out
+          router.push('/admin/login')
+          router.refresh() // Refresh the router to update the session state
         }
       } else {
         setError('An unknown error occurred')
@@ -178,7 +198,7 @@ export default function BlogsPage() {
       )
   )
 
- /*  if (isLoading) {
+  /*  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -254,7 +274,7 @@ export default function BlogsPage() {
       </Card>
 
       {/* Blog Posts Grid */}
-      <div className="grid gap-6">        
+      <div className="grid gap-6">
         {isLoading && (
           <>
             <Skeleton className="w-full h-52" />
@@ -400,3 +420,5 @@ export default function BlogsPage() {
     </div>
   )
 }
+
+export default withAuth(BlogPage, { requiredRole: 'ADMIN' })

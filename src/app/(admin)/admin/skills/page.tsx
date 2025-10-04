@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Search, Edit, Trash2, Code } from 'lucide-react'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
 
 // Mock data - replace with actual API calls
 const mockSkills = [
@@ -44,7 +45,7 @@ const mockSkills = [
   },
 ]
 
-export default function SkillsPage() {
+const SkillsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [skills, setSkills] = useState(mockSkills)
 
@@ -211,3 +212,5 @@ export default function SkillsPage() {
     </div>
   )
 }
+
+export default withAuth(SkillsPage, { requiredRole: 'ADMIN' })

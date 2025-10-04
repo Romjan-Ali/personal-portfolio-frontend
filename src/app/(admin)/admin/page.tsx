@@ -1,4 +1,7 @@
 // app/admin/page.tsx
+
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,6 +13,8 @@ import {
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
+
 
 // Mock data - replace with actual API calls
 const stats = [
@@ -62,7 +67,8 @@ const recentActivities = [
   },
 ]
 
-export default function AdminDashboard() {
+const AdminDashboard =() => {
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -192,3 +198,5 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
+export default withAuth(AdminDashboard, { requiredRole: 'ADMIN' })
