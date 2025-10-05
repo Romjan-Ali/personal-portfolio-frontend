@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/api-client.ts
 class ApiClient {
   private baseURL: string

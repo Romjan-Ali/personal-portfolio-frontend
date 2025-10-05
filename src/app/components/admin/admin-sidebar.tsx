@@ -8,12 +8,9 @@ import {
   FileText,
   Briefcase,
   Code,
-  Settings,
   LogOut,
-  User,
   ChevronLeft,
   ChevronRight,
-  Menu,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
@@ -24,8 +21,8 @@ const menuItems = [
   { href: '/admin/blogs', icon: FileText, label: 'Blog Posts' },
   { href: '/admin/projects', icon: Briefcase, label: 'Projects' },
   { href: '/admin/skills', icon: Code, label: 'Skills' },
-  { href: '/admin/profile', icon: User, label: 'Profile' },
-  { href: '/admin/settings', icon: Settings, label: 'Settings' },
+  // { href: '/admin/profile', icon: User, label: 'Profile' },
+  // { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
 interface AdminSidebarProps {

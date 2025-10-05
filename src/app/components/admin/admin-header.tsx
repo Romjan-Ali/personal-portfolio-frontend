@@ -1,8 +1,7 @@
 // app/components/admin/admin-header.tsx
 'use client'
 
-import { Bell, Search, User, Moon, Sun } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Bell, User, Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 
@@ -30,16 +29,8 @@ export function AdminHeader() {
 
   return (
     <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 transition-colors duration-300">
-      <div className="flex items-center justify-between">
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <Input
-              placeholder="Search..."
-              className="pl-10 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400"
-            />
-          </div>
-        </div>
+      <div className="flex items-center justify-end">
+        
 
         <div className="flex items-center space-x-4">
           {/* Dark/Light Mode Toggle */}

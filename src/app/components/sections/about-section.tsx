@@ -1,22 +1,148 @@
 // app/components/sections/about-section.tsx
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { Download, MapPin, Calendar } from 'lucide-react'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { getAboutForHomepage, type About } from '@/lib/about-data'
 
 export function AboutSection() {
-  const stats = [
+  const [aboutData, setAboutData] = useState<Partial<About> | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const data = await getAboutForHomepage()
+        setAboutData(data)
+      } catch (err) {
+        console.error('Failed to fetch about data:', err)
+        // Silently fail - UI will use default data
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAboutData()
+  }, [])
+
+  // Use API data if available, otherwise use original static data
+  const displayData = aboutData || {
+    fullName: 'Romjan Ali',
+    title: 'Full Stack Developer',
+    shortBio: 'Passionate developer crafting digital solutions that make a difference',
+    bio: "Hello! I'm Romjan Ali, a passionate Full Stack Developer with over 2 years of experience creating web applications that solve real-world problems. I specialize in modern JavaScript frameworks and love turning complex ideas into beautiful, functional code.\n\nWhen I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing my knowledge through blog posts and tutorials.",
+    location: 'Dhaka, Bangladesh',
+    status: 'Available for freelance work',
+    imageUrl: '/images/romjan-ali-2-3-r.png',
+    resumeUrl: '/documents/romjan-ali-resume.pdf',
+    stats: [
+      { number: '2+', label: 'Years Experience' },
+      { number: '5+', label: 'Projects Completed' },
+      { number: '2+', label: 'Happy Clients' },
+      { number: '10+', label: 'Technologies' },
+    ]
+  }
+
+  const stats = displayData.stats || [
     { number: '2+', label: 'Years Experience' },
     { number: '5+', label: 'Projects Completed' },
     { number: '2+', label: 'Happy Clients' },
     { number: '10+', label: 'Technologies' },
-  ]  
+  ]
+
+  const handleDownloadCV = () => {
+    if (displayData.resumeUrl) {
+      window.open(displayData.resumeUrl, '_blank')
+    } else {
+      // Fallback action if no resume URL
+      alert('Resume link not available')
+    }
+  }
+
+  // Show loading state with original design structure
+  if (loading) {
+    return (
+      <section id="about" className="py-20 relative overflow-hidden 
+        bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 
+        dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+        
+        <div className="relative container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
+              About Me
+            </h2>
+            <div className="w-24 h-1 bg-purple-600 mx-auto mb-6"></div>
+            <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-64 mx-auto animate-pulse"></div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Image Section - Loading */}
+            <div className="relative">
+              <div className="relative z-10">
+                <div className="w-80 h-96 mx-auto bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-1">
+                  <div className="w-full h-full bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden animate-pulse">
+                    <div className="w-full h-full bg-slate-700 rounded-2xl"></div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -top-4 -left-4 w-24 h-24 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+              <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-30"></div>
+            </div>
+
+            {/* Content Section - Loading */}
+            <div className="space-y-6">
+              <div>
+                <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-48 mb-4 animate-pulse"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-full animate-pulse"></div>
+                  <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-5/6 animate-pulse"></div>
+                  <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-4/6 animate-pulse"></div>
+                </div>
+              </div>
+
+              {/* Stats Loading */}
+              <div className="grid grid-cols-2 gap-6 py-6">
+                {[1, 2, 3, 4].map((index) => (
+                  <div key={index} className="text-center p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 animate-pulse">
+                    <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-16 mx-auto mb-2"></div>
+                    <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-20 mx-auto"></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Personal Info Loading */}
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-5 h-5 bg-slate-300 dark:bg-slate-700 rounded mr-3 animate-pulse"></div>
+                  <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-5 h-5 bg-slate-300 dark:bg-slate-700 rounded mr-3 animate-pulse"></div>
+                  <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-40 animate-pulse"></div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                <div className="h-12 bg-slate-300 dark:bg-slate-700 rounded-full w-40 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="about" className="py-20 relative overflow-hidden 
       bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 
       dark:from-slate-900 dark:via-slate-800 dark:to-purple-900">
- <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
-    <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+      <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+      
       <div className="relative container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
@@ -24,7 +150,7 @@ export function AboutSection() {
           </h2>
           <div className="w-24 h-1 bg-purple-600 mx-auto mb-6"></div>
           <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Passionate developer crafting digital solutions that make a difference
+            {displayData.shortBio}
           </p>
         </div>
 
@@ -35,7 +161,13 @@ export function AboutSection() {
               <div className="w-80 h-96 mx-auto bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl p-1">
                 <div className="w-full h-full bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden">
                   <span className="text-white text-lg">
-                    <Image className='object-cover' width={600} height={2000} src="/images/romjan-ali-2-3-r.png" alt="Romjan Ali" />
+                    <Image 
+                      className='object-cover' 
+                      width={600} 
+                      height={2000} 
+                      src={displayData.imageUrl || "/images/romjan-ali-2-3-r.png"} 
+                      alt="Romjan Ali" 
+                    />
                   </span>
                 </div>
               </div>
@@ -76,22 +208,22 @@ export function AboutSection() {
             <div className="space-y-3">
               <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <MapPin className="w-5 h-5 mr-3 text-purple-600" />
-                <span>Dhaka, Bangladesh</span>
+                <span>{displayData.location}</span>
               </div>
               <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <Calendar className="w-5 h-5 mr-3 text-purple-600" />
-                <span>Available for freelance work</span>
+                <span>{displayData.status || 'Available for freelance work'}</span>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full">
+              <Button 
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full"
+                onClick={handleDownloadCV}
+              >
                 <Download className="w-4 h-4 mr-2" />
                 Download CV
               </Button>
-              {/* <Button variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 px-8 py-3 rounded-full transition-colors duration-300">
-                View My Story
-              </Button> */}
             </div>
           </div>
         </div>

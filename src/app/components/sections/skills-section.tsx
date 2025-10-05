@@ -1,7 +1,32 @@
 // app/components/sections/skills-section.tsx
+'use client'
+
+import { useEffect, useState } from 'react'
+import {
+  getSkillsByCategory,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type SkillCategory as ApiSkillCategory,
+} from '@/lib/skill-data'
+
+interface Skill {
+  name: string
+  level: number
+  color: string
+}
+
+interface LocalSkillCategory {
+  title: string
+  skills: Skill[]
+}
 
 export function SkillsSection() {
-  const skillCategories = [
+  const [skillCategories, setSkillCategories] = useState<LocalSkillCategory[]>(
+    []
+  )
+  const [loading, setLoading] = useState(true)
+
+  // Default static data as fallback
+  const defaultSkillCategories: LocalSkillCategory[] = [
     {
       title: 'Frontend',
       skills: [
@@ -42,6 +67,136 @@ export function SkillsSection() {
     },
   ]
 
+  const additionalTechnologies = [
+    'JavaScript (ES6+)',
+    'HTML5 & CSS3',
+    'jQuery',
+    'Expo',
+    'REST APIs',
+    'Zod',
+    'Redux Toolkit Query',
+    'NativeWindCSS',
+    'Prisma ORM',
+    'PostgreSQL',
+    'MongoDB',
+    'Mongoose',
+    'Git & GitHub',
+    'Bun',
+    'Linux (Ubuntu)',
+    'Docker',
+  ]
+
+  useEffect(() => {
+    const fetchSkillsData = async () => {
+      try {
+        const apiCategories = await getSkillsByCategory()
+        console.log({ apiCategories })
+
+        if (apiCategories && apiCategories.length > 0) {
+          // Transform API data to match the local structure
+          const transformedCategories: LocalSkillCategory[] = apiCategories.map(
+            (category: LocalSkillCategory) => ({
+              title: category.title,
+              skills: category.skills.map((skill) => ({
+                name: skill.name,
+                level: skill.level,
+                color: skill.color || getDefaultColor(skill.level), // Use provided color or generate based on level
+              })),
+            })
+          )
+          setSkillCategories(transformedCategories)
+        } else {
+          setSkillCategories(defaultSkillCategories)
+        }
+      } catch (err) {
+        console.error('Failed to fetch skills data:', err)
+        setSkillCategories(defaultSkillCategories)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSkillsData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Helper function to generate default colors based on skill level
+  const getDefaultColor = (level: number): string => {
+    if (level >= 90) return 'bg-green-500'
+    if (level >= 80) return 'bg-blue-500'
+    if (level >= 70) return 'bg-purple-500'
+    if (level >= 60) return 'bg-yellow-500'
+    return 'bg-gray-500'
+  }
+
+  // Use API data if available, otherwise use default data
+  const displayCategories =
+    skillCategories.length > 0 ? skillCategories : defaultSkillCategories
+
+  if (loading) {
+    return (
+      <section
+        id="skills"
+        className="py-20 relative overflow-hidden 
+        bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 
+        dark:from-slate-900 dark:via-slate-800 dark:to-purple-900"
+      >
+        {/* Decorative blobs */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-64 mx-auto mb-4 animate-pulse"></div>
+            <div className="w-24 h-1 bg-purple-600 mx-auto mb-6"></div>
+            <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-96 mx-auto animate-pulse"></div>
+          </div>
+
+          <div className="grid md:grid-cols-2 2xl:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {[1, 2, 3, 4].map((categoryIndex) => (
+              <div
+                key={categoryIndex}
+                className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 animate-pulse"
+              >
+                <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-32 mx-auto mb-6"></div>
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5].map((skillIndex) => (
+                    <div key={skillIndex} className="group">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="h-5 bg-slate-300 dark:bg-slate-700 rounded w-24"></div>
+                        <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-8"></div>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+                        <div className="h-full bg-slate-300 dark:bg-slate-600 rounded-full w-3/4"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Additional Skills Grid Loading */}
+          <div className="mt-16 max-w-4xl mx-auto">
+            <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-48 mx-auto mb-8 animate-pulse"></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(
+                (index) => (
+                  <div
+                    key={index}
+                    className="bg-white dark:bg-slate-700 rounded-lg px-4 py-3 text-center animate-pulse"
+                  >
+                    <div className="h-5 bg-slate-300 dark:bg-slate-600 rounded w-full"></div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section
       id="skills"
@@ -52,6 +207,7 @@ export function SkillsSection() {
       {/* Decorative blobs */}
       <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-30"></div>
+
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
@@ -65,7 +221,7 @@ export function SkillsSection() {
         </div>
 
         <div className="grid md:grid-cols-2 2xl:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          {skillCategories.map((category, categoryIndex) => (
+          {displayCategories.map((category, categoryIndex) => (
             <div
               key={categoryIndex}
               className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300"
@@ -104,24 +260,7 @@ export function SkillsSection() {
             Additional Technologies
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              'JavaScript (ES6+)',
-              'HTML5 & CSS3',
-              'jQuery',
-              'Expo',
-              'REST APIs',
-              'Zod',
-              'Redux Toolkit Query',
-              'NativeWindCSS',
-              'Prisma ORM',
-              'PostgreSQL',
-              'MongoDB',
-              'Mongoose',
-              'Git & GitHub',
-              'Bun',
-              'Linux (Ubuntu)',
-              'Docker',
-            ].map((tech, index) => (
+            {additionalTechnologies.map((tech, index) => (
               <div
                 key={index}
                 className="bg-white dark:bg-slate-700 rounded-lg px-4 py-3 text-center 

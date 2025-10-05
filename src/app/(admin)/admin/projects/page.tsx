@@ -1,7 +1,7 @@
 // app/admin/projects/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,44 +17,38 @@ import {
   Briefcase,
 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
-
-// Mock data - replace with actual API calls
-const mockProjects = [
-  {
-    id: '1',
-    title: 'Job Portal Platform',
-    description:
-      'A full-stack job portal where users can post jobs, apply, and manage applications.',
-    technologies: [
-      'Next.js',
-      'TypeScript',
-      'PostgreSQL',
-      'Prisma',
-      'TailwindCSS',
-    ],
-    liveUrl: 'https://jobportal-demo.vercel.app',
-    githubUrl: 'https://github.com/romjan-ali/jobportal',
-    featured: true,
-    status: 'COMPLETED' as const,
-    createdAt: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    title: 'Chat Application',
-    description:
-      'A real-time chat app with private and group messaging, typing indicators, and file sharing.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'Zustand'],
-    liveUrl: 'https://chatapp-demo.vercel.app',
-    githubUrl: 'https://github.com/romjan-ali/chatapp',
-    featured: true,
-    status: 'COMPLETED' as const,
-    createdAt: '2024-01-10T14:30:00Z',
-  },
-]
+import { 
+  getAllProjects, 
+  deleteProject, 
+  updateProject,
+  type Project 
+} from '@/lib/project-data'
+import { useSession } from 'next-auth/react'
 
 const ProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
-  const [projects, setProjects] = useState(mockProjects)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const projectsData = await getAllProjects()
+      setProjects(projectsData || [])
+    } catch (err) {
+      console.error('Failed to fetch projects:', err)
+      setError('Failed to load projects')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -62,26 +56,118 @@ const ProjectsPage = () => {
       project.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this project?')) {
-      setProjects(projects.filter((project) => project.id !== id))
-      // Add API call here
+      try {
+        if (!session?.accessToken) {
+          throw new Error('No authentication token found')
+        }
+        
+        await deleteProject(id, session.accessToken)
+        setProjects(projects.filter((project) => project.id !== id))
+      } catch (err) {
+        console.error('Failed to delete project:', err)
+        setError('Failed to delete project')
+      }
     }
   }
 
-  const toggleFeatured = (id: string) => {
-    setProjects(
-      projects.map((project) =>
-        project.id === id
-          ? { ...project, featured: !project.featured }
-          : project
+  const toggleFeatured = async (id: string) => {
+    try {
+      if (!session?.accessToken) {
+        throw new Error('No authentication token found')
+      }
+
+      const project = projects.find(p => p.id === id)
+      if (!project) return
+
+      const updatedProject = await updateProject(
+        id, 
+        { featured: !project.featured }, 
+        session.accessToken
       )
+      
+      setProjects(projects.map((project) =>
+        project.id === id ? updatedProject : project
+      ))
+    } catch (err) {
+      console.error('Failed to update project:', err)
+      setError('Failed to update project')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-48 animate-pulse"></div>
+            <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-64 mt-2 animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+        </div>
+
+        {/* Search and Filters Loading */}
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded animate-pulse"></div>
+              </div>
+              <div className="flex gap-2">
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-24 animate-pulse"></div>
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-24 animate-pulse"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Projects Grid Loading */}
+        <div className="grid gap-6">
+          {[1, 2].map((index) => (
+            <Card key={index} className="border-slate-200 dark:border-slate-700">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-48 animate-pulse"></div>
+                      <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-4 animate-pulse"></div>
+                      <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-20 animate-pulse"></div>
+                    </div>
+                    <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-full mb-4 animate-pulse"></div>
+                    <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-3/4 mb-4 animate-pulse"></div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {[1, 2, 3, 4].map((techIndex) => (
+                        <div key={techIndex} className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16 animate-pulse"></div>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-20 animate-pulse"></div>
+                      <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-24 animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    {[1, 2, 3].map((btnIndex) => (
+                      <div key={btnIndex} className="h-8 w-8 bg-slate-300 dark:bg-slate-700 rounded animate-pulse"></div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     )
-    // Add API call here
   }
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-700 dark:text-red-400">{error}</p>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -149,12 +235,12 @@ const ProjectsPage = () => {
                     )}
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        project.status === 'COMPLETED'
+                        project.liveUrl
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                       }`}
                     >
-                      {project.status}
+                      {project.liveUrl ? 'LIVE' : 'IN PROGRESS'}
                     </span>
                   </div>
 
@@ -163,7 +249,7 @@ const ProjectsPage = () => {
                   </p>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies.slice(0, 4).map((tech, index) => (
+                    {project.tags.slice(0, 4).map((tech, index) => (
                       <span
                         key={index}
                         className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded text-xs border border-slate-200 dark:border-slate-600"
@@ -171,32 +257,36 @@ const ProjectsPage = () => {
                         {tech}
                       </span>
                     ))}
-                    {project.technologies.length > 4 && (
+                    {project.tags.length > 4 && (
                       <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-1 rounded text-xs border border-slate-200 dark:border-slate-600">
-                        +{project.technologies.length - 4}
+                        +{project.tags.length - 4}
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                    <a
-                      href={project.liveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Live Demo
-                    </a>
-                    <a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400"
-                    >
-                      <Github className="w-4 h-4" />
-                      Source Code
-                    </a>
+                    {project.liveUrl && (
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Live Demo
+                      </a>
+                    )}
+                    {project.repoUrl && (
+                      <a
+                        href={project.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-400"
+                      >
+                        <Github className="w-4 h-4" />
+                        Source Code
+                      </a>
+                    )}
                   </div>
                 </div>
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // lib/blog-data.ts
 import {
   calculateReadTime,
@@ -44,18 +45,6 @@ export interface User {
   role: 'USER' | 'ADMIN'
 }
 
-// Helper function to get the token from the session (optional)
-async function getAuthToken(): Promise<string | null> {
-  try {
-    const session = await getServerSession(authOptions)
-    console.log('session in blog-data', session)
-    return session?.accessToken || null
-  } catch (error) {
-    console.error('Failed to get auth token:', error)
-    return null
-  }
-}
-
 // API base URL - adjust based on your environment
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
@@ -65,37 +54,6 @@ async function fetchFromAPI(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    })
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`)
-    }
-
-    return await response.json()
-  } catch (error) {
-    console.error(`Failed to fetch from ${endpoint}:`, error)
-    throw error
-  }
-}
-
-// Authenticated fetch function (for admin endpoints)
-async function fetchFromAPIWithAuth(endpoint: string, options?: RequestInit) {
-  try {
-    const token = await getAuthToken()
-
-    console.log({ token })
-
-    if (!token) {
-      throw new Error('Authentication required: No token found')
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
         ...options?.headers,
       },
       ...options,

@@ -1,53 +1,44 @@
 // app/admin/skills/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Search, Edit, Trash2, Code } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Code, Loader2 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
-
-// Mock data - replace with actual API calls
-const mockSkills = [
-  {
-    id: '1',
-    name: 'React',
-    category: 'Frontend',
-    level: 90,
-    color: 'bg-blue-500',
-    featured: true,
-  },
-  {
-    id: '2',
-    name: 'TypeScript',
-    category: 'Frontend',
-    level: 80,
-    color: 'bg-blue-600',
-    featured: true,
-  },
-  {
-    id: '3',
-    name: 'Node.js',
-    category: 'Backend',
-    level: 88,
-    color: 'bg-green-500',
-    featured: true,
-  },
-  {
-    id: '4',
-    name: 'MongoDB',
-    category: 'Backend',
-    level: 82,
-    color: 'bg-emerald-600',
-    featured: false,
-  },
-]
+import { 
+  getAllSkills, 
+  deleteSkill, 
+  type Skill 
+} from '@/lib/skill-data'
+import { useSession } from 'next-auth/react'
 
 const SkillsPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
-  const [skills, setSkills] = useState(mockSkills)
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    fetchSkills()
+  }, [])
+
+  const fetchSkills = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const skillsData = await getAllSkills()
+      setSkills(skillsData || [])
+    } catch (err) {
+      console.error('Failed to fetch skills:', err)
+      setError('Failed to load skills')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredSkills = skills.filter(
     (skill) =>
@@ -57,15 +48,118 @@ const SkillsPage = () => {
 
   const categories = [...new Set(skills.map((skill) => skill.category))]
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this skill?')) {
-      setSkills(skills.filter((skill) => skill.id !== id))
-      // Add API call here
+      try {
+        if (!session?.accessToken) {
+          throw new Error('No authentication token found')
+        }
+        
+        await deleteSkill(id, session.accessToken)
+        setSkills(skills.filter((skill) => skill.id !== id))
+      } catch (err) {
+        console.error('Failed to delete skill:', err)
+        setError('Failed to delete skill')
+      }
     }
+  }
+
+  const getSkillColor = (skill: Skill): string => {
+    return skill.color || getDefaultColor(skill.level)
+  }
+
+  const getDefaultColor = (level: number): string => {
+    if (level >= 90) return 'bg-green-500'
+    if (level >= 80) return 'bg-blue-500'
+    if (level >= 70) return 'bg-purple-500'
+    if (level >= 60) return 'bg-yellow-500'
+    return 'bg-gray-500'
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="h-8 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+            <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-64 mt-2 animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+        </div>
+
+        {/* Search and Filters Loading */}
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded animate-pulse"></div>
+              </div>
+              <div className="flex gap-2">
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-24 animate-pulse"></div>
+                <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-24 animate-pulse"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Skills Loading */}
+        {[1, 2].map((categoryIndex) => (
+          <Card key={categoryIndex} className="border-slate-200 dark:border-slate-700">
+            <CardHeader>
+              <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[1, 2, 3].map((skillIndex) => (
+                  <div
+                    key={skillIndex}
+                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg animate-pulse"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-4 h-4 bg-slate-300 dark:bg-slate-700 rounded"></div>
+                        <div className="h-5 bg-slate-300 dark:bg-slate-700 rounded w-24"></div>
+                        <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16"></div>
+                      </div>
+                      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div className="h-2 bg-slate-300 dark:bg-slate-600 rounded-full w-3/4"></div>
+                      </div>
+                      <div className="flex justify-between text-xs mt-1">
+                        <div className="h-3 bg-slate-300 dark:bg-slate-700 rounded w-16"></div>
+                        <div className="h-3 bg-slate-300 dark:bg-slate-700 rounded w-8"></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <div className="h-8 w-8 bg-slate-300 dark:bg-slate-700 rounded"></div>
+                      <div className="h-8 w-8 bg-slate-300 dark:bg-slate-700 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <p className="text-red-700 dark:text-red-400">{error}</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchSkills}
+            className="mt-2"
+          >
+            <Loader2 className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -127,14 +221,14 @@ const SkillsPage = () => {
             className="border-slate-200 dark:border-slate-700"
           >
             <CardHeader>
-              <CardTitle>{category}</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">{category}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {categorySkills.map((skill) => (
                   <div
                     key={skill.id}
-                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors duration-200"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
@@ -142,16 +236,12 @@ const SkillsPage = () => {
                         <span className="font-medium text-slate-900 dark:text-white">
                           {skill.name}
                         </span>
-                        {skill.featured && (
-                          <span className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 px-2 py-1 rounded-full text-xs">
-                            Featured
-                          </span>
-                        )}
+                        {/* Removed featured badge since it's not in the schema */}
                       </div>
 
                       <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full ${skill.color} transition-all duration-1000`}
+                          className={`h-2 rounded-full ${getSkillColor(skill)} transition-all duration-1000`}
                           style={{ width: `${skill.level}%` }}
                         ></div>
                       </div>
@@ -166,7 +256,7 @@ const SkillsPage = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-slate-600 dark:text-slate-400"
+                          className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -193,7 +283,7 @@ const SkillsPage = () => {
           <CardContent className="p-12 text-center">
             <Code className="w-12 h-12 text-slate-400 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              No skills found
+              {skills.length === 0 ? 'No skills yet' : 'No skills found'}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
               {searchTerm
