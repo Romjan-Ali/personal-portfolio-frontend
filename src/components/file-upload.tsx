@@ -5,6 +5,7 @@ import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 interface FileUploadProps {
   onFileUpload: (url: string) => void
@@ -14,12 +15,12 @@ interface FileUploadProps {
   className?: string
 }
 
-export function FileUpload({ 
-  onFileUpload, 
-  currentImage, 
+export function FileUpload({
+  onFileUpload,
+  currentImage,
   accept = 'image/*',
   maxSize = 5, // 5MB default
-  className = ''
+  className = '',
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(currentImage || '')
@@ -44,7 +45,9 @@ export function FileUpload({
     return true
   }
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0]
     if (!file) return
 
@@ -61,11 +64,11 @@ export function FileUpload({
     try {
       // In a real app, you would upload to your backend or cloud storage
       // For demo purposes, we'll simulate an upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
       // Replace this with your actual upload logic
       const uploadedUrl = await uploadToServer(file)
-      
+
       onFileUpload(uploadedUrl)
       setPreviewUrl(uploadedUrl)
     } catch (error) {
@@ -95,6 +98,7 @@ export function FileUpload({
 
       const data = await response.json()
       return data.url
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // Fallback to a placeholder service for demo
       // In production, you might use Cloudinary, AWS S3, etc.
@@ -111,13 +115,18 @@ export function FileUpload({
     }
   }
 
-// For drag and drop:
-const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-  e.preventDefault()
-  const file = e.dataTransfer.files[0]
-  if (file) handleFileSelect(file)
-}
+  // For drag and drop:
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      const syntheticEvent = {
+        target: { files: [file] },
+      } as unknown as React.ChangeEvent<HTMLInputElement>
 
+      handleFileSelect(syntheticEvent)
+    }
+  }
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -128,7 +137,7 @@ const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
       {previewUrl ? (
         <div className="space-y-2">
           <div className="relative group">
-            <img
+            <Image
               src={previewUrl}
               alt="Preview"
               className="w-full h-48 object-cover rounded-lg border-2 border-slate-200 dark:border-slate-700"
@@ -154,9 +163,10 @@ const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         <div
           className={`
             border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200
-            ${error 
-              ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20' 
-              : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
+            ${
+              error
+                ? 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20'
+                : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
             }
             cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50
           `}
@@ -167,10 +177,13 @@ const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
           <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-4" />
           <div className="space-y-2">
             <p className="text-slate-700 dark:text-slate-300 font-medium">
-              {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+              {isUploading
+                ? 'Uploading...'
+                : 'Click to upload or drag and drop'}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              {accept.includes('image') ? 'PNG, JPG, GIF' : 'Any file'} up to {maxSize}MB
+              {accept.includes('image') ? 'PNG, JPG, GIF' : 'Any file'} up to{' '}
+              {maxSize}MB
             </p>
           </div>
         </div>

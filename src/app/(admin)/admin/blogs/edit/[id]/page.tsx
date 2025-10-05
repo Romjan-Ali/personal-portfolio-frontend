@@ -8,11 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { ArrowLeft, Save, Eye } from 'lucide-react'
+import { ArrowLeft, Save } from 'lucide-react'
 import Link from 'next/link'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
 import {
-  createBlogPost,
   getBlogPostById,
   updateBlogPost,
 } from '@/lib/blog-data'
@@ -44,6 +43,7 @@ const EditBlogPage = () => {
 
     getBlog()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {

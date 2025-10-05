@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { BlogPost, getBlogPosts, getPopularPosts } from '@/lib/blog-data'
 import { Button } from '@/components/ui/button'
-import { Calendar, ArrowRight, TrendingUp, BookOpen, Coffee } from 'lucide-react'
+import { Calendar, ArrowRight, TrendingUp } from 'lucide-react'
 
 interface BlogSidebarProps {
   currentPost?: {

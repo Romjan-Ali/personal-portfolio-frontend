@@ -11,15 +11,6 @@ export default function AboutPage() {
     { number: '10+', label: 'Technologies' },
   ]
 
-  const skills = [
-    { name: 'JavaScript/TypeScript', level: 90 },
-    { name: 'React/Next.js', level: 85 },
-    { name: 'Node.js', level: 80 },
-    { name: 'Python', level: 75 },
-    { name: 'UI/UX Design', level: 70 },
-    { name: 'DevOps', level: 65 },
-  ]
-
     const skillCategories = [
     {
       title: 'Frontend',

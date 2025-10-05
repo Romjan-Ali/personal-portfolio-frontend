@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Plus,
   Search,
@@ -21,7 +21,6 @@ import {
   getBlogPosts,
   deleteBlogPost,
   BlogPost,
-  getTotalViews,
   calculateReadTime,
 } from '@/lib/blog-data'
 import SmartPagination from '@/components/smart-pagination'
@@ -50,6 +49,7 @@ const BlogPage = () => {
 
   useEffect(() => {
     loadBlogs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
 
   useEffect(() => {
@@ -62,6 +62,7 @@ const BlogPage = () => {
     }, 500)
 
     return () => clearTimeout(timeoutId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
   const loadBlogs = async () => {
@@ -74,10 +75,14 @@ const BlogPage = () => {
       })
       setBlogs(posts)
       paginationInfo.current = pagination
-    } catch (error: any) {
-      setError(error.message)
-      if (error.message === 'Unauthorized') {
-        await handleLogout()
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+        if (error.message === 'Unauthorized') {
+          await handleLogout()
+        }
+      } else {
+        setError('An unexpected error occurred')
       }
     } finally {
       setIsLoading(false)
@@ -95,10 +100,14 @@ const BlogPage = () => {
       })
       setBlogs(posts)
       paginationInfo.current = pagination
-    } catch (error: any) {
-      setError(error.message)
-      if (error.message === 'Unauthorized') {
-        await handleLogout()
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+        if (error.message === 'Unauthorized') {
+          await handleLogout()
+        }
+      } else {
+        setError('An unexpected error occurred')
       }
     } finally {
       setIsSearchLoading(false)
@@ -124,17 +133,21 @@ const BlogPage = () => {
       setBlogs(blogs.filter((blog) => blog.id !== id))
       // Reload to update pagination info
       await loadBlogs()
-    } catch (error: any) {
-      setError(error.message)
-      if (error.message === 'Unauthorized') {
-        await handleLogout()
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message)
+        if (error.message === 'Unauthorized') {
+          await handleLogout()
+        }
+      } else {
+        setError('An unexpected error occurred')
       }
     }
   }
 
   // Calculate total published blogs
   useEffect(() => {
-    totalPublished.current = blogs.filter(blog => blog.published).length
+    totalPublished.current = blogs.filter((blog) => blog.published).length
   }, [blogs])
 
   return (
@@ -160,9 +173,9 @@ const BlogPage = () => {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-800 dark:text-red-200">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => setError('')}
             className="mt-2"
           >
@@ -226,82 +239,83 @@ const BlogPage = () => {
           </>
         )}
 
-        {!isLoading && blogs.map((blog) => (
-          <Card
-            key={blog.id}
-            className="border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300"
-          >
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {blog.title}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        blog.published
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      }`}
-                    >
-                      {blog.published ? 'Published' : 'Draft'}
-                    </span>
+        {!isLoading &&
+          blogs.map((blog) => (
+            <Card
+              key={blog.id}
+              className="border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow duration-300"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                        {blog.title}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          blog.published
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        }`}
+                      >
+                        {blog.published ? 'Published' : 'Draft'}
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
+                      {blog.summary}
+                    </p>
+
+                    <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {new Date(blog.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        {calculateReadTime(blog.content)} min read
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        {blog.views} views
+                      </div>
+                    </div>
                   </div>
 
-                  <p className="text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">
-                    {blog.summary}
-                  </p>
-
-                  <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {new Date(blog.createdAt).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {calculateReadTime(blog.content)} min read
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      {blog.views} views
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 ml-4">
-                  <Link href={`/blog/${blog.slug}`} target="_blank">
+                  <div className="flex items-center gap-2 ml-4">
+                    <Link href={`/blog/${blog.slug}`} target="_blank">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-slate-600 dark:text-slate-400"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Link href={`/admin/blogs/edit/${blog.id}`}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-slate-600 dark:text-slate-400"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </Link>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-slate-600 dark:text-slate-400"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={() => handleDelete(blog.id)}
+                      disabled={!session?.accessToken}
                     >
-                      <Eye className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  </Link>
-                  <Link href={`/admin/blogs/edit/${blog.id}`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-600 dark:text-slate-400"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    onClick={() => handleDelete(blog.id)}
-                    disabled={!session?.accessToken}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
       </div>
 
       {!isLoading && blogs.length === 0 && (
