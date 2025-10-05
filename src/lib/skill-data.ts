@@ -84,7 +84,8 @@ export async function createSkill(skillData: Partial<Skill>, token: string) {
     const data = await fetchFromAPI('/skills', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(skillData)
     })
@@ -101,7 +102,8 @@ export async function updateSkill(id: string, skillData: Partial<Skill>, token: 
     const data = await fetchFromAPI(`/skills/${id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(skillData)
     })
@@ -134,7 +136,8 @@ export async function createManySkills(skills: Partial<Skill>[], token: string) 
     const data = await fetchFromAPI('/skills/bulk', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ skills })
     })
@@ -151,7 +154,8 @@ export async function reorderSkills(category: string, skillIds: string[], token:
     const data = await fetchFromAPI(`/skills/reorder/${category}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ skillIds })
     })

@@ -131,7 +131,8 @@ export async function createProject(projectData: Partial<Project>, token: string
     const data = await fetchFromAPI('/projects', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(projectData)
     })
@@ -148,7 +149,8 @@ export async function updateProject(id: string, projectData: Partial<Project>, t
     const data = await fetchFromAPI(`/projects/${id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(projectData)
     })

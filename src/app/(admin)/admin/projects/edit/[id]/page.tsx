@@ -123,6 +123,8 @@ const EditProjectPage = () => {
       setSaving(true)
       setError(null)
 
+      console.log({formData})
+
       await updateProject(projectId, formData, session.accessToken)
       
       router.push('/admin/projects')

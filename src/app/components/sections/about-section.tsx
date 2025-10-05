@@ -53,12 +53,13 @@ export function AboutSection() {
   ]
 
   const handleDownloadCV = () => {
-    if (displayData.resumeUrl) {
+    window.open('https://drive.google.com/file/d/1v_EuoLYsOK1758Gh58_TCLvhO0f9IVWm/view?usp=drive_link', '_blank')
+    /* if (displayData.resumeUrl) {
       window.open(displayData.resumeUrl, '_blank')
     } else {
       // Fallback action if no resume URL
       alert('Resume link not available')
-    }
+    } */
   }
 
   // Show loading state with original design structure
