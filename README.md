@@ -15,7 +15,6 @@ This is the frontend application for the the personal portfolio. It is built wit
 - [Authentication & Authorization](#authentication--authorization)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
