@@ -5,12 +5,11 @@ import Image from 'next/image'
 
 export function AboutSection() {
   const stats = [
-    { number: '3+', label: 'Years Experience' },
-    { number: '50+', label: 'Projects Completed' },
-    { number: '25+', label: 'Happy Clients' },
+    { number: '2+', label: 'Years Experience' },
+    { number: '5+', label: 'Projects Completed' },
+    { number: '2+', label: 'Happy Clients' },
     { number: '10+', label: 'Technologies' },
-  ]
-  
+  ]  
 
   return (
     <section id="about" className="py-20 relative overflow-hidden 
@@ -53,7 +52,7 @@ export function AboutSection() {
                 Crafting Digital Excellence
               </h3>
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                Hello! I&apos;m John Doe, a passionate Full Stack Developer with over 3 years of experience 
+                Hello! I&apos;m Romjan Ali, a passionate Full Stack Developer with over 2 years of experience 
                 creating web applications that solve real-world problems. I specialize in modern 
                 JavaScript frameworks and love turning complex ideas into beautiful, functional code.
               </p>
@@ -77,7 +76,7 @@ export function AboutSection() {
             <div className="space-y-3">
               <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <MapPin className="w-5 h-5 mr-3 text-purple-600" />
-                <span>New York, NY</span>
+                <span>Dhaka, Bangladesh</span>
               </div>
               <div className="flex items-center text-slate-600 dark:text-slate-300">
                 <Calendar className="w-5 h-5 mr-3 text-purple-600" />
@@ -90,9 +89,9 @@ export function AboutSection() {
                 <Download className="w-4 h-4 mr-2" />
                 Download CV
               </Button>
-              <Button variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 px-8 py-3 rounded-full transition-colors duration-300">
+              {/* <Button variant="outline" className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 px-8 py-3 rounded-full transition-colors duration-300">
                 View My Story
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>

@@ -10,52 +10,60 @@ export function ProjectsSection() {
   const projects = [
     {
       id: '1',
-      title: 'Job Portal Platform',
+      title: 'Wallex',
       description:
-        'A full-stack job portal where users can post jobs, apply, and manage applications. Includes authentication, admin dashboard, and role-based access.',
-      image: '/projects/jobportal.jpg',
+        'Wallex is a full-stack digital wallet platform built with React, TypeScript, Node.js, and MongoDB. It allows users to securely register, log in, and perform financial transactions such as cash-in, cash-out, send money, and payments. The app includes role-based access (admin, user, agent), transaction history tracking, and a responsive TailwindCSS-powered UI.',
+      image: 'https://i.postimg.cc/pTXD49g7/image.png',
       technologies: [
-        'Next.js',
+        'React.js',
         'TypeScript',
-        'PostgreSQL',
-        'Prisma',
+        'MongoDB',
+        'Node.js',
         'TailwindCSS',
       ],
-      liveUrl: 'https://jobportal-demo.vercel.app',
-      githubUrl: 'https://github.com/romjan-ali/jobportal',
+      liveUrl:
+        'https://programming-hero-level2-b5-a6-assignment-frontend-6qd3ix5ur.vercel.app/',
+      githubUrl: 'https://github.com/Romjan-Ali/wallex/',
       featured: true,
     },
     {
       id: '2',
-      title: 'Chat Application',
+      title: 'Litera',
       description:
-        'A real-time chat app with private and group messaging, typing indicators, and file sharing. Built with WebSockets for live communication.',
-      image: '/projects/chatapp.jpg',
-      technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'Zustand'],
-      liveUrl: 'https://chatapp-demo.vercel.app',
-      githubUrl: 'https://github.com/romjan-ali/chatapp',
+        'A full-stack web application for managing a library: books, authors, borrowers, and transactions. Powered by a Node/Express backend and a React frontend, this system offers both administrative and user functionality.',
+      image: 'https://i.postimg.cc/02wKjdx9/image.png',
+      technologies: [
+        'React.js',
+        'Tailwind CSS',
+        'React Router',
+        'Axios',
+        'Redux RTK Query',
+        'Node.js',
+        'Express',
+      ],
+      liveUrl: 'https://programming-hero-level2-b5-a4-assig-phi.vercel.app/',
+      githubUrl: 'https://github.com/Romjan-Ali/book-library-management',
       featured: true,
     },
     {
       id: '3',
-      title: 'Personal Portfolio Website',
+      title: 'TaskHub - Project Manager',
       description:
-        'Modern portfolio website to showcase projects, blogs, and skills. Built with a clean UI, SEO optimization, and responsive design.',
-      image: '/projects/portfolio.jpg',
-      technologies: ['Next.js', 'TailwindCSS', 'Framer Motion', 'Shadcn UI'],
-      liveUrl: 'https://romjan-ali.netlify.app',
-      githubUrl: 'https://github.com/romjan-ali/portfolio',
-      featured: false,
+        'TaskHub is a project management web application designed to help users organize and track tasks seamlessly. Users can create, edit, delete, and categorize tasks. The app features smooth UI interactions, responsive design, and interactive animations, making task management intuitive and enjoyable.',
+      image: 'https://i.postimg.cc/KjfdPpdH/image.png',
+      technologies: ['React', 'TailwindCSS', 'Framer Motion', 'Shadcn UI'],
+      liveUrl: 'https://task-hub-steel.vercel.app/',
+      githubUrl: 'https://github.com/Romjan-Ali/project-manager',
     },
     {
       id: '4',
-      title: 'E-Learning Platform',
+      title: 'NSFW Detector',
       description:
-        'A learning management system (LMS) where users can enroll in courses, track progress, and complete quizzes. Includes instructor dashboard.',
-      image: '/projects/elearning.jpg',
-      technologies: ['Next.js', 'tRPC', 'Prisma', 'Stripe', 'PostgreSQL'],
-      liveUrl: 'https://elearning-demo.vercel.app',
-      githubUrl: 'https://github.com/romjan-ali/elearning',
+        'A web application that uses TensorFlow.js and the NSFW JS model to detect inappropriate (NSFW) content in images directly in the browser. Built with React.js for the frontend and Express for the backend, it provides real-time classification, ensuring safe content moderation without uploading sensitive data to external servers.',
+      image: 'https://i.postimg.cc/RF5Yqf3B/image.png',
+      technologies: ['React.js', 'NSFW JS', 'TensorFlow.js', 'Express'],
+      liveUrl: 'https://nsfw-detector-93nm.onrender.com/',
+      githubUrl: 'https://github.com/Romjan-Ali/nsfw-detector',
       featured: false,
     },
   ]
@@ -114,7 +122,13 @@ export function ProjectsSection() {
               <div className="relative h-48 bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
                 <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/50 flex items-center justify-center">
                   <span className="text-slate-900 dark:text-white text-lg font-semibold">
-                    <Image src="https://images.unsplash.com/uploads/141103282695035fa1380/95cdfeef" width={1200} height={300} alt='project' />                  </span>
+                    <Image
+                      src={project.image}
+                      width={1200}
+                      height={300}
+                      alt="project"
+                    />{' '}
+                  </span>
                 </div>
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-500 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="flex space-x-4">
@@ -204,7 +218,7 @@ export function ProjectsSection() {
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        {/* <div className="text-center mt-12">
           <Button
             size="lg"
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 
@@ -213,7 +227,7 @@ export function ProjectsSection() {
             View All Projects
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
-        </div>
+        </div> */}
       </div>
     </section>
   )

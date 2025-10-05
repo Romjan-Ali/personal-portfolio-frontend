@@ -74,7 +74,7 @@ export function BlogSearch({
 
       {/* Popular Tags */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center">
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center">
           <Tag className="w-4 h-4 mr-2" />
           Popular Topics
         </h3>

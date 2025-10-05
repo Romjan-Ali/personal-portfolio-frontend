@@ -12,7 +12,7 @@ import {
 import { BlogCard } from '@/app/components/blog/blog-card'
 import { BlogSearch } from '@/app/components/blog/blog-search'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, ArrowRight, Search, Plus } from 'lucide-react'
+import { Calendar, Clock, ArrowRight, Search } from 'lucide-react'
 import Pagination from '../../components/blog/pagination'
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { tag, search, page } = await searchParams
 
   const { data: posts, pagination } = await getBlogPosts({
-    limit: 12,
+    limit: 9,
     page: page ? parseInt(page) : 1,
   })
 
@@ -110,14 +110,14 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             </div>
 
             {/* Add Create Button for Admin */}
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <Link href="/blog/create">
                 <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-full transition-colors duration-300">
                   <Plus className="w-5 h-5 mr-2" />
                   Write New Post
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
@@ -219,14 +219,14 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             {/* Results Info */}
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   {tag
                     ? `Tag: "${tag}"`
                     : search
                     ? `Search: "${search}"`
                     : 'All Articles'}
                 </h2>
-                <p className="text-slate-600 mt-1">
+                <p className="text-slate-600 dark:text-slate-400 mt-1">
                   {filteredPagination.total} article
                   {filteredPagination.total !== 1 ? 's' : ''} found
                 </p>
@@ -234,7 +234,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
               {(tag || search) && (
                 <Link href="/blog">
-                  <Button variant="outline" className="border-slate-300">
+                  <Button
+                    variant="outline"
+                    className="border-slate-300 dark:border-slate-600"
+                  >
                     Clear Filters
                   </Button>
                 </Link>

@@ -12,8 +12,8 @@ import {
   getAllTags as getAllTagsUtil,
 } from './blog-utils'
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 export interface BlogPost {
   id: string
   title: string
@@ -33,6 +33,7 @@ export interface BlogPost {
   authorId?: string
   createdAt: string
   updatedAt: string
+  tags: string[]
 }
 
 export interface User {
@@ -85,8 +86,8 @@ async function fetchFromAPIWithAuth(endpoint: string, options?: RequestInit) {
   try {
     const token = await getAuthToken()
 
-    console.log({token})
-    
+    console.log({ token })
+
     if (!token) {
       throw new Error('Authentication required: No token found')
     }
@@ -94,7 +95,7 @@ async function fetchFromAPIWithAuth(endpoint: string, options?: RequestInit) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         ...options?.headers,
       },
       ...options,
@@ -134,7 +135,7 @@ export async function getBlogPosts(options?: {
     const endpoint = `/blogs${params.toString() ? `?${params.toString()}` : ''}`
     console.log({ endpoint })
     const data = await fetchFromAPI(endpoint)
-    console.log({data})
+    console.log({ data })
 
     return data.blogs || data || []
   } catch (error) {
@@ -147,12 +148,25 @@ export async function getBlogPosts(options?: {
 export async function getBlogPostBySlug(slug: string) {
   try {
     const data = await fetchFromAPI(`/blogs/${slug}`)
+    console.log({ data })
     return data.blog || data || null
   } catch (error) {
     console.error(`Failed to fetch blog post with slug ${slug}:`, error)
     return null
   }
 }
+
+export async function getBlogPostById(id: string) {
+  try {
+    const data = await fetchFromAPI(`/blogs/id/${id}`)
+    console.log({ data })
+    return data.blog || data || null
+  } catch (error) {
+    console.error(`Failed to fetch blog post with id ${id}:`, error)
+    return null
+  }
+}
+
 
 export async function getRelatedPosts(
   currentPostId: string,
@@ -209,12 +223,15 @@ export async function incrementBlogViews(slug: string) {
   }
 }
 
-export async function createBlogPost(blogData: Partial<BlogPost>, token?: string) {
+export async function createBlogPost(
+  blogData: Partial<BlogPost>,
+  token?: string
+) {
   try {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     }
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
@@ -224,8 +241,8 @@ export async function createBlogPost(blogData: Partial<BlogPost>, token?: string
       headers,
       body: JSON.stringify(blogData),
     })
-    
-    console.log({data})
+
+    console.log({ data })
     return data.blog || data
   } catch (error) {
     console.error('Failed to create blog post:', error)
@@ -233,20 +250,34 @@ export async function createBlogPost(blogData: Partial<BlogPost>, token?: string
   }
 }
 
-
-
 export async function updateBlogPost(
-  slug: string,
-  blogData: Partial<BlogPost>
+  id: string,
+  blogData: Partial<BlogPost>,
+  token?: string
 ) {
   try {
-    const data = await fetchFromAPI(`/blogs/${slug}`, {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+
+    const data = await fetch(`${API_BASE_URL}/blogs/${id}`, {
       method: 'PUT',
+      headers,
       body: JSON.stringify(blogData),
     })
-    return data.blog || data
+
+    if (!data.ok) {
+      throw new Error(`API error: ${data.status} ${data.statusText}`)
+    }
+
+    const result = await data.json()
+    return result.blog || result
   } catch (error) {
-    console.error(`Failed to update blog post ${slug}:`, error)
+    console.error(`Failed to update blog post ${id}:`, error)
     throw error
   }
 }
@@ -256,17 +287,21 @@ export async function deleteBlogPost(id: string, token?: string) {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     }
-    
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`
     }
 
-    const data = await fetchFromAPI(`/blogs/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/blogs/${id}`, {
       method: 'DELETE',
       headers,
     })
-    
-    return data.blog || data
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`)
+    }
+
+    return await response.json()
   } catch (error) {
     console.error(`Failed to delete blog post ${id}:`, error)
     throw error

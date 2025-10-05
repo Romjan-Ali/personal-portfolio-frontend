@@ -24,7 +24,7 @@ export function BlogCard({ post }: BlogCardProps) {
   const tags = extractTags(post.content)
 
   return (
-    <article className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:border-purple-300 transition-all duration-500 hover:shadow-xl">
+    <article className="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-500 transition-all duration-500 hover:shadow-xl dark:hover:shadow-slate-900/50">
       {/* Thumbnail */}
       <Link href={`/blog/${post.slug}`}>
         <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-600 overflow-hidden">
@@ -34,7 +34,7 @@ export function BlogCard({ post }: BlogCardProps) {
               style={{ backgroundImage: `url(${post.thumbnail})` }}
             />
           ) : (
-            <div className="absolute inset-0 bg-slate-900/30 flex items-center justify-center group-hover:bg-slate-900/10 transition-colors duration-300">
+            <div className="absolute inset-0 bg-slate-900/30 dark:bg-slate-900/50 flex items-center justify-center group-hover:bg-slate-900/10 dark:group-hover:bg-slate-900/30 transition-colors duration-300">
               <span className="text-white font-semibold">Blog Image</span>
             </div>
           )}
@@ -45,7 +45,7 @@ export function BlogCard({ post }: BlogCardProps) {
       {/* Content */}
       <div className="p-6">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-4 text-sm text-slate-500">
+          <div className="flex items-center space-x-4 text-sm text-slate-500 dark:text-slate-400">
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
               {new Date(post.createdAt).toLocaleDateString()}
@@ -58,12 +58,12 @@ export function BlogCard({ post }: BlogCardProps) {
         </div>
 
         <Link href={`/blog/${post.slug}`}>
-          <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-purple-600 transition-colors duration-300 line-clamp-2 leading-tight">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 line-clamp-2 leading-tight">
             {post.title}
           </h3>
         </Link>
 
-        <p className="text-slate-600 mb-4 leading-relaxed line-clamp-3">
+        <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed line-clamp-3">
           {post.summary}
         </p>
 
@@ -73,7 +73,7 @@ export function BlogCard({ post }: BlogCardProps) {
             {tags.map((tag, index) => (
               <span 
                 key={index}
-                className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs border border-slate-300"
+                className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md text-xs border border-slate-300 dark:border-slate-600"
               >
                 {tag}
               </span>
