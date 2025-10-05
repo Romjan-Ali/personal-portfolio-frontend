@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio Frontend
 
-## Getting Started
+This is the frontend application for the the personal portfolio. It is built with **Next.js + TypeScript** and uses **Tailwind CSS** for styling. It communicates with the backend (Express + Prisma) for dynamic content, authentication, and CMS-like functionality.
 
-First, run the development server:
+---
 
+### Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Setup & Installation](#setup--installation)
+- [Scripts](#scripts)
+- [Environment Variables](#environment-variables)
+- [Folder Structure](#folder-structure)
+- [Authentication & Authorization](#authentication--authorization)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+### Features
+
+- Public-facing pages:
+  - Home / About Me
+  - Projects showcase
+  - Blog listing & individual blog pages
+- Private (owner only) dashboard to:
+  - Create / edit / delete blog posts
+  - Add / edit projects
+- Static site generation (SSG) & ISR (Incremental Static Regeneration) for improved performance
+- Responsive UI and good UX
+- Error handling, form validation, and user feedback (toasts)
+
+---
+
+### Tech Stack
+
+- React / Next.js
+- TypeScript
+- Tailwind CSS
+- react-hot-toast (for notifications)
+- Axios or fetch API (for backend communication)
+- NextAuth / custom JWT-based auth (depending on implementation)
+
+---
+
+### Setup & Installation
+
+1. Clone the repo (or inside the monorepo, go into the frontend folder)
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+  git clone <repository-url>
+  cd B5A7/frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2.  Install dependencies
+```bash
+  npm install
+  # or
+  yarn install
+```
+3. Create a .env.local file (in the frontend folder) with environment variables (see below)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Run the development server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+  npm run dev
+  # or
+  yarn dev
+```
 
-## Learn More
+5. Build & start in production mode
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+  npm run build
+  npm run start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command             | Description                         |
+| ------------------- | ----------------------------------- |
+| `dev`               | Runs the Next.js development server |
+| `build`             | Builds the app for production       |
+| `start`             | Starts the built Next.js app        |
+| `lint` / `lint:fix` | Run ESLint (and fix)                |
+| `format`            | Format code with Prettier (if used) |
 
-## Deploy on Vercel
+You can add or customize scripts (e.g. test) as needed.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+In `.env.local` (frontend):
+
+```bash
+  NEXT_PUBLIC_API_URL=http://localhost:4000
+  NEXT_PUBLIC_JWT_REFRESH_ENDPOINT=/auth/refresh
+  # any other public environment variables
+```
+
+### Folder Structure (example)
+
+```
+/frontend
+ ├── components/
+ ├── pages/
+ │    ├── index.tsx
+ │    ├── about.tsx
+ │    ├── projects/
+ │    └── blogs/
+ ├── public/
+ ├── styles/
+ ├── utils/
+ ├── hooks/
+ └── ...
+```
+
+You can modify this structure to suit your preferences (feature-based, domain-based, etc.).
+
+### Authentication & Authorization
+
+- The frontend interacts with the backend API for login, logout, token refresh, etc.
+
+- Access to private routes (like the dashboard) is protected; only authenticated users can enter.
+
+- If using JWT, tokens are stored (for example in HttpOnly cookies or secure storage) and sent with requests to protected endpoints.
+
+### Deployment
+
+You can deploy the frontend to platforms like Vercel, Netlify, or any static hosting that supports Next.js.
+Remember to configure environment variables in production.
+
+Example steps (for Vercel):
+
+1. Push the frontend branch to GitHub
+
+2. Connect to Vercel, select the project
+
+3. Add environment variables (same keys as .env.local)
+
+4. Deploy
+
+### Contributing
+
+- Fork the repository
+
+- Create a feature branch (e.g. feat/blog-crud)
+
+- Write clean, modular code
+
+- Add meaningful commits
+
+- Submit a pull request
