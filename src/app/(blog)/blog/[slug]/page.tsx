@@ -46,14 +46,15 @@ export async function generateMetadata({
   }
 }
 
-export async function generateStaticParams() {
+/* export async function generateStaticParams() {
   const { getBlogPosts } = await import('@/lib/blog-data')
   const posts = await getBlogPosts()
 
-  return posts.data.map((post: BlogPost) => ({
+   return posts.data.map((post: BlogPost) => ({
     slug: post.slug,
-  }))
-}
+  })) 
+
+} */
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
