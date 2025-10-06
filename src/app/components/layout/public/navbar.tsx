@@ -149,7 +149,7 @@ export function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={`md:hidden p-2 rounded-lg transition-all duration-300 ${
-              isScrolled ? 'text-slate-700 dark:text-slate-300' : 'text-white'
+              'text-slate-700 dark:text-slate-300'
             }`}
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -159,7 +159,7 @@ export function Navbar() {
         {/* Mobile Navigation */}
         <div
           className={`md:hidden transition-all duration-300 overflow-hidden ${
-            isOpen ? 'max-h-96 pb-4' : 'max-h-0'
+            isOpen ? 'max-h-96 pb-4 bg-white dark:bg-slate-900' : 'max-h-0'
           }`}
         >
           <div className="flex flex-col space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -167,10 +167,10 @@ export function Navbar() {
               <button
                 key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`text-left font-medium transition-all duration-300 ${
-                  isScrolled
-                    ? 'text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
-                    : 'text-white/90 hover:text-white'
+                className={`text-center font-medium transition-all duration-300 ${
+                  
+                     'text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400'
+                    
                 } ${
                   activeSection === item.href.replace('#', '')
                     ? 'text-purple-600 dark:text-purple-400 font-semibold'
@@ -181,13 +181,12 @@ export function Navbar() {
               </button>
             ))}
 
-            <div className="flex items-center space-x-4 pt-4">
+            <div className="flex justify-center items-center space-x-4 pt-4">
               <button
                 onClick={toggleDarkMode}
                 className={`p-2 rounded-lg transition-all duration-300 ${
-                  isScrolled
-                    ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    : 'text-white/90 hover:bg-white/10'
+                   'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    
                 }`}
               >
                 {darkMode ? (
