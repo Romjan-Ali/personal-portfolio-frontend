@@ -97,8 +97,6 @@ const AdminDashboard = () => {
         : (projectsData as BlogPost)?.pagination?.total || 0
       const totalSkills = Array.isArray(skillsData) ? skillsData.length : 0
 
-      console.log('blogs data', blogsData.data)
-
       const publishedBlogs = Array.isArray(blogsData.data)
         ? (blogsData.data as BlogPost[]).filter((blog) => blog.published).length
         : 0

@@ -294,8 +294,6 @@ export async function createBlogPost(
       headers,
       body: JSON.stringify(blogData),
     })
-
-    console.log({ data })
     
     // Revalidate after successful creation
     if (data.blog || data) {

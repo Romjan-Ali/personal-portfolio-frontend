@@ -31,7 +31,6 @@ const LoginPage = () => {
   useEffect(() => {
     const checkSession = async () => {
       const session = await getSession()
-      console.log({ session })
       if (session?.user?.role === 'ADMIN') {
         router.push('/admin')
       }
@@ -119,7 +118,6 @@ const LoginPage = () => {
       })
 
       if (res?.error) {
-        console.log('res.error', res.error)
         setError('Invalid email or password')
         toast.error('Invalid email or password')
       } else {

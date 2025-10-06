@@ -90,7 +90,6 @@ export function SkillsSection() {
     const fetchSkillsData = async () => {
       try {
         const apiCategories = await getSkillsByCategory()
-        console.log({ apiCategories })
 
         if (apiCategories && apiCategories.length > 0) {
           // Transform API data to match the local structure

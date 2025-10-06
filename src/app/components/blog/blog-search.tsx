@@ -27,7 +27,6 @@ export function BlogSearch({
     const params = new URLSearchParams()
     if (search) params.set('search', search)
     if (selectedTag) params.set('tag', selectedTag)
-      console.log({params})
     router.push(`/blog?${params.toString()}`)
   }
 

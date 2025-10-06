@@ -42,8 +42,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
   const { data: tags } = await getAllTags()
 
-  console.log({ searchParams: await searchParams })
-
   // Filter posts based on search params using the utility functions
   let filteredPosts = posts
   let filteredPagination = pagination

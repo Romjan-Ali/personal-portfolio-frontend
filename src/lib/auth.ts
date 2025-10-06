@@ -26,8 +26,6 @@ export const authOptions: AuthOptions = {
 
           if (!res.ok || !data.success) return null;
 
-          console.log("data.data.token", data.data.token)
-
           // Return user data with accessToken at the root level
           return {
             id: data.data.user.id,

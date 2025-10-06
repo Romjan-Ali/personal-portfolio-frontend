@@ -27,7 +27,6 @@ export default function TestRevalidatePage() {
         timestamp: new Date().toISOString(),
         data: result
       })
-      console.log(`✅ ${action} successful:`, result)
     } catch (error) {
       setResult({
         action,
