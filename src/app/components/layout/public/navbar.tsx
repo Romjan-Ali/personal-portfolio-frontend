@@ -132,12 +132,17 @@ export function Navbar() {
             </button>
 
             <Button
-              onClick={() => scrollToSection('#contact')}
-              className="rounded-full transition-all duration-300 bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Resume
-            </Button>
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full"
+                asChild
+              >
+                <a
+                  href="https://drive.google.com/file/d/1v_EuoLYsOK1758Gh58_TCLvhO0f9IVWm/view?usp=drive_link"
+                  target="_blank"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Resume
+                </a>
+              </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -193,18 +198,16 @@ export function Navbar() {
               </button>
 
               <Button
-                onClick={() => {
-                  scrollToSection('#contact')
-                  setIsOpen(false)
-                }}
-                className={`flex-1 rounded-full transition-colors duration-300 ${
-                  isScrolled
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600 dark:text-white'
-                    : 'bg-slate-100/70 backdrop-blur-sm text-slate-900 hover:bg-white hover:text-slate-900 border border-slate-300 dark:bg-slate-800/20 dark:text-white dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-600'
-                }`}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-full"
+                asChild
               >
-                <Download className="w-4 h-4 mr-2" />
-                Resume
+                <a
+                  href="https://drive.google.com/file/d/1v_EuoLYsOK1758Gh58_TCLvhO0f9IVWm/view?usp=drive_link"
+                  target="_blank"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Resume
+                </a>
               </Button>
             </div>
           </div>

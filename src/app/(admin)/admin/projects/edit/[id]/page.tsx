@@ -4,6 +4,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { projectFormSchema } from '@/lib/validation/project-validation'
+import { ZodError } from 'zod'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,11 +20,12 @@ import {
   Github,
   Plus,
   X,
-  Loader2
+  Loader2,
 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
 import { getProjectById, updateProject, type Project } from '@/lib/project-data'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 
 const EditProjectPage = () => {
   const params = useParams()
@@ -32,6 +36,7 @@ const EditProjectPage = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof typeof formData, string>>>({})
   const [project, setProject] = useState<Project | null>(null)
 
   const [formData, setFormData] = useState({
@@ -49,7 +54,7 @@ const EditProjectPage = () => {
     if (projectId) {
       fetchProject()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const fetchProject = async () => {
@@ -57,7 +62,7 @@ const EditProjectPage = () => {
       setLoading(true)
       setError(null)
       const projectData = await getProjectById(projectId)
-      
+
       if (projectData) {
         setProject(projectData)
         setFormData({
@@ -79,29 +84,66 @@ const EditProjectPage = () => {
       setLoading(false)
     }
   }
+  const validateField = (
+    field: keyof typeof formData,
+    value: string | boolean | string[]
+  ) => {
+    try {
+      const tempData = { ...formData, [field]: value }
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
+      projectFormSchema.parse(tempData)
+
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const fieldError = err.issues.find((issue) =>
+          issue.path.includes(field)
+        )
+        if (fieldError) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            [field]: fieldError.message,
+          }))
+        }
+      }
+    }
+  }
+
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }))
+
+    validateField(field, value)
   }
 
   const handleAddTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
+      const updatedTags = [...formData.tags, newTag.trim()]
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: updatedTags,
       }))
+      validateField('tags', updatedTags)
       setNewTag('')
     }
   }
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    const updatedTags = formData.tags.filter((tag) => tag !== tagToRemove)
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: updatedTags,
     }))
+    validateField('tags', updatedTags)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -113,7 +155,7 @@ const EditProjectPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!session?.accessToken) {
       setError('Authentication required')
       return
@@ -122,15 +164,34 @@ const EditProjectPage = () => {
     try {
       setSaving(true)
       setError(null)
+      setFieldErrors({})
 
-      console.log({formData})
+      // Validate form data using your shared schema
+      const validatedData = projectFormSchema.parse(formData)
 
-      await updateProject(projectId, formData, session.accessToken)
-      
+      await updateProject(projectId, validatedData, session.accessToken)
+
+      toast.success('Project updated successfully!')
       router.push('/admin/projects')
     } catch (err) {
-      console.error('Failed to update project:', err)
-      setError('Failed to update project')
+      if (err instanceof ZodError) {
+        // Convert Zod errors to field-specific errors
+        const errors: Record<string, string> = {}
+        err.issues.forEach((issue) => {
+          const field = issue.path[0] as string
+          errors[field] = issue.message
+        })
+        setFieldErrors(errors)
+
+        // Show first error in toast
+        const firstError = err.issues[0]?.message || 'Invalid input'
+        toast.error(firstError)
+        setError('Please fix the validation errors below')
+      } else {
+        console.error('Failed to update project:', err)
+        toast.error('Failed to update project')
+        setError('Failed to update project')
+      }
     } finally {
       setSaving(false)
     }
@@ -207,7 +268,10 @@ const EditProjectPage = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {[1, 2, 3, 4].map((index) => (
-                    <div key={index} className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16 animate-pulse"></div>
+                    <div
+                      key={index}
+                      className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16 animate-pulse"
+                    ></div>
                   ))}
                 </div>
               </CardContent>
@@ -227,12 +291,16 @@ const EditProjectPage = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Edit Project</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Edit Project
+          </h1>
         </div>
 
         <Card className="border-slate-200 dark:border-slate-700">
           <CardContent className="p-12 text-center">
-            <div className="text-red-500 dark:text-red-400 text-lg mb-4">{error}</div>
+            <div className="text-red-500 dark:text-red-400 text-lg mb-4">
+              {error}
+            </div>
             <Button onClick={fetchProject}>Retry</Button>
           </CardContent>
         </Card>
@@ -248,7 +316,9 @@ const EditProjectPage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Edit Project</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Edit Project
+        </h1>
       </div>
 
       {error && (
@@ -270,7 +340,10 @@ const EditProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="title"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Project Title *
                   </Label>
                   <Input
@@ -278,28 +351,57 @@ const EditProjectPage = () => {
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     placeholder="Enter project title"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.title
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
+                  {fieldErrors.title && (
+                    <p className="text-red-500 text-sm">{fieldErrors.title}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="description"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Description *
                   </Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
                     placeholder="Describe your project in detail..."
                     rows={6}
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 resize-none"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 resize-none ${
+                      fieldErrors.description
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
+                  {fieldErrors.description && (
+                    <p className="text-red-500 text-sm">
+                      {fieldErrors.description}
+                    </p>
+                  )}
+                  <p className="text-sm text-slate-500">
+                    {formData.description.length}/1000 characters
+                    {formData.description.length < 50 &&
+                      ` (minimum 50 required)`}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="image"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Image URL
                   </Label>
                   <Input
@@ -307,8 +409,15 @@ const EditProjectPage = () => {
                     value={formData.image}
                     onChange={(e) => handleInputChange('image', e.target.value)}
                     placeholder="https://example.com/image.jpg"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.image
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                   />
+                  {fieldErrors.image && (
+                    <p className="text-red-500 text-sm">{fieldErrors.image}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -322,7 +431,10 @@ const EditProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="liveUrl" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="liveUrl"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     <ExternalLink className="w-4 h-4 inline mr-2" />
                     Live Demo URL
                   </Label>
@@ -330,14 +442,19 @@ const EditProjectPage = () => {
                     id="liveUrl"
                     type="url"
                     value={formData.liveUrl}
-                    onChange={(e) => handleInputChange('liveUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('liveUrl', e.target.value)
+                    }
                     placeholder="https://your-project.vercel.app"
                     className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="repoUrl" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="repoUrl"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     <Github className="w-4 h-4 inline mr-2" />
                     Repository URL
                   </Label>
@@ -345,7 +462,9 @@ const EditProjectPage = () => {
                     id="repoUrl"
                     type="url"
                     value={formData.repoUrl}
-                    onChange={(e) => handleInputChange('repoUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('repoUrl', e.target.value)
+                    }
                     placeholder="https://github.com/username/project"
                     className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
                   />
@@ -365,13 +484,18 @@ const EditProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="featured" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="featured"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Featured Project
                   </Label>
                   <Switch
                     id="featured"
                     checked={formData.featured}
-                    onCheckedChange={(checked) => handleInputChange('featured', checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('featured', checked)
+                    }
                   />
                 </div>
               </CardContent>
@@ -386,7 +510,10 @@ const EditProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newTag" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="newTag"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Add Technology
                   </Label>
                   <div className="flex gap-2">
@@ -408,6 +535,12 @@ const EditProjectPage = () => {
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
+                  {fieldErrors.tags && (
+                    <p className="text-red-500 text-sm">{fieldErrors.tags}</p>
+                  )}
+                  <p className="text-sm text-slate-500">
+                    {formData.tags.length}/10 tags
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">

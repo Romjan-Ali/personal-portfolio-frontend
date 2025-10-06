@@ -24,11 +24,22 @@ import {
   calculateReadTime,
 } from '@/lib/blog-data'
 import SmartPagination from '@/components/smart-pagination'
-import { PageInfo } from '@/lib/blog-types'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { signOut, useSession } from 'next-auth/react'
+import { PageInfo } from '@/lib/blog-types'
 import { useRouter } from 'next/navigation'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
+import { BlogQueryParams } from '@/lib/blog-types'
 
 const BlogPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,6 +47,19 @@ const BlogPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [error, setError] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [blogToDelete, setBlogToDelete] = useState<BlogPost | null>(null)
+  const [activeFilter, setActiveFilter] = useState<
+    'all' | 'published' | 'drafts'
+  >('all')
+
+  const [totalCounts, setTotalCounts] = useState({
+    all: 0,
+    published: 0,
+    drafts: 0,
+  })
+
   const paginationInfo = useRef<PageInfo>({
     limit: 0,
     page: 0,
@@ -43,14 +67,14 @@ const BlogPage = () => {
     total: 0,
   })
   const totalPublished = useRef<number>(0)
-  const [error, setError] = useState('')
   const router = useRouter()
   const { data: session } = useSession()
 
   useEffect(() => {
     loadBlogs()
+    fetchTotalCounts()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
+  }, [currentPage, activeFilter])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -63,16 +87,27 @@ const BlogPage = () => {
 
     return () => clearTimeout(timeoutId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm])
+  }, [searchTerm, activeFilter])
 
   const loadBlogs = async () => {
     try {
       setIsLoading(true)
       setError('')
-      const { data: posts, pagination } = await getBlogPosts({
+
+      // Build query parameters based on active filter
+      const queryParams: BlogQueryParams = {
         limit: 10,
         page: currentPage,
-      })
+      }
+
+      // Add published filter if not showing all
+      if (activeFilter === 'published') {
+        queryParams.published = true
+      } else if (activeFilter === 'drafts') {
+        queryParams.published = false
+      }
+
+      const { data: posts, pagination } = await getBlogPosts(queryParams)
       setBlogs(posts)
       paginationInfo.current = pagination
     } catch (error: unknown) {
@@ -93,11 +128,22 @@ const BlogPage = () => {
     try {
       setIsSearchLoading(true)
       setError('')
-      const { data: posts, pagination } = await getBlogPosts({
+
+      // Build query parameters based on active filter and search
+      const queryParams: BlogQueryParams = {
         limit: 10,
         search: searchTerm,
         page: 1,
-      })
+      }
+
+      // Add published filter if not showing all
+      if (activeFilter === 'published') {
+        queryParams.published = true
+      } else if (activeFilter === 'drafts') {
+        queryParams.published = false
+      }
+
+      const { data: posts, pagination } = await getBlogPosts(queryParams)
       setBlogs(posts)
       paginationInfo.current = pagination
     } catch (error: unknown) {
@@ -114,6 +160,31 @@ const BlogPage = () => {
     }
   }
 
+  const fetchTotalCounts = async () => {
+    try {
+      // Fetch all posts count
+      const allPosts = await getBlogPosts({ limit: 1, page: 1 })
+      const publishedPosts = await getBlogPosts({
+        limit: 1,
+        page: 1,
+        published: true,
+      })
+      const draftPosts = await getBlogPosts({
+        limit: 1,
+        page: 1,
+        published: false,
+      })
+
+      setTotalCounts({
+        all: allPosts.pagination.total,
+        published: publishedPosts.pagination.total,
+        drafts: draftPosts.pagination.total,
+      })
+    } catch (error) {
+      console.error('Failed to fetch total counts:', error)
+    }
+  }
+
   const handleLogout = async () => {
     await signOut({
       redirect: false,
@@ -124,13 +195,13 @@ const BlogPage = () => {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this blog post?')) return
-
     try {
       setError('')
       // Pass the token from session to deleteBlogPost
       await deleteBlogPost(id, session?.accessToken)
       setBlogs(blogs.filter((blog) => blog.id !== id))
+      setDeleteDialogOpen(false)
+      setBlogToDelete(null)
       // Reload to update pagination info
       await loadBlogs()
     } catch (error: unknown) {
@@ -142,7 +213,40 @@ const BlogPage = () => {
       } else {
         setError('An unexpected error occurred')
       }
+      setDeleteDialogOpen(false)
+      setBlogToDelete(null)
     }
+  }
+
+  const openDeleteDialog = (blog: BlogPost) => {
+    setBlogToDelete(blog)
+    setDeleteDialogOpen(true)
+  }
+
+  // Helper function to get button styles based on active state
+  const getFilterButtonStyles = (
+    filterType: 'all' | 'published' | 'drafts'
+  ) => {
+    const isActive = activeFilter === filterType
+
+    if (isActive) {
+      return 'bg-purple-600 text-white hover:bg-purple-700 border-purple-600 dark:bg-purple-700 dark:text-white dark:hover:bg-purple-600 dark:border-purple-700'
+    }
+
+    return 'border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500'
+  }
+
+  // Filter button click handler
+  const handleFilterClick = (filter: 'all' | 'published' | 'drafts') => {
+    setActiveFilter(filter)
+    setCurrentPage(1) // Reset to first page when changing filters
+  }
+
+  // Clear search and filters
+  const clearSearchAndFilters = () => {
+    setSearchTerm('')
+    setActiveFilter('all')
+    setCurrentPage(1)
   }
 
   // Calculate total published blogs
@@ -158,8 +262,7 @@ const BlogPage = () => {
             Blog Posts
           </h1>
           <p className="text-slate-600 dark:text-slate-400 mt-2">
-            Manage your blog posts and articles ({paginationInfo.current.total}{' '}
-            total)
+            Manage your blog posts and articles ({totalCounts.all} total)
           </p>
         </div>
         <Link href="/admin/blogs/create">
@@ -204,25 +307,24 @@ const BlogPage = () => {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="border-slate-300 dark:border-slate-600"
-                onClick={() => {
-                  setSearchTerm('')
-                  setCurrentPage(1)
-                }}
+                className={getFilterButtonStyles('all')}
+                onClick={() => handleFilterClick('all')}
               >
-                All Posts ({paginationInfo.current.total})
+                All Posts ({totalCounts.all})
               </Button>
               <Button
                 variant="outline"
-                className="border-slate-300 dark:border-slate-600"
+                className={getFilterButtonStyles('published')}
+                onClick={() => handleFilterClick('published')}
               >
-                Published ({totalPublished.current})
+                Published ({totalCounts.published})
               </Button>
               <Button
                 variant="outline"
-                className="border-slate-300 dark:border-slate-600"
+                className={getFilterButtonStyles('drafts')}
+                onClick={() => handleFilterClick('drafts')}
               >
-                Drafts ({paginationInfo.current.total - totalPublished.current})
+                Drafts ({totalCounts.drafts})
               </Button>
             </div>
           </div>
@@ -306,7 +408,7 @@ const BlogPage = () => {
                       variant="ghost"
                       size="icon"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      onClick={() => handleDelete(blog.id)}
+                      onClick={() => openDeleteDialog(blog)}
                       disabled={!session?.accessToken}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -325,19 +427,42 @@ const BlogPage = () => {
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
               {searchTerm
                 ? 'No matching blog posts found'
+                : activeFilter === 'published'
+                ? 'No published blog posts'
+                : activeFilter === 'drafts'
+                ? 'No draft blog posts'
                 : 'No blog posts yet'}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 mb-6">
               {searchTerm
                 ? 'Try adjusting your search terms'
+                : activeFilter !== 'all'
+                ? `You have ${
+                    totalCounts[
+                      activeFilter === 'published' ? 'published' : 'drafts'
+                    ]
+                  } ${
+                    activeFilter === 'published' ? 'published' : 'draft'
+                  } posts in total. Try switching to a different filter.`
                 : 'Get started by creating your first blog post'}
             </p>
-            <Link href="/admin/blogs/create">
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Blog Post
-              </Button>
-            </Link>
+            <div className="flex gap-3 justify-center">
+              {(searchTerm || activeFilter !== 'all') && (
+                <Button
+                  variant="outline"
+                  onClick={clearSearchAndFilters}
+                  className="border-slate-300 dark:border-slate-600"
+                >
+                  Clear Filters
+                </Button>
+              )}
+              <Link href="/admin/blogs/create">
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Blog Post
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -349,6 +474,29 @@ const BlogPage = () => {
           onPageChange={setCurrentPage}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              blog post &quot;{blogToDelete?.title}&quot; and all of its data
+              from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => blogToDelete && handleDelete(blogToDelete.id)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Post
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

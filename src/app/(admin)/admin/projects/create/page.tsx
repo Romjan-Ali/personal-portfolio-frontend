@@ -4,6 +4,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { projectFormSchema } from '@/lib/validation/project-validation'
+import { ZodError } from 'zod'
+import { withAuth } from '@/app/components/admin/hoc/with-auth'
+import { createProject } from '@/lib/project-data'
+import { useSession } from 'next-auth/react'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,11 +23,9 @@ import {
   Github,
   Plus,
   X,
-  Loader2
+  Loader2,
 } from 'lucide-react'
-import { withAuth } from '@/app/components/admin/hoc/with-auth'
-import { createProject } from '@/lib/project-data'
-import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 
 const AddProjectPage = () => {
   const router = useRouter()
@@ -29,6 +33,9 @@ const AddProjectPage = () => {
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof typeof formData, string>>
+  >({})
 
   const [formData, setFormData] = useState({
     title: '',
@@ -41,28 +48,73 @@ const AddProjectPage = () => {
   })
   const [newTag, setNewTag] = useState('')
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
+const validateField = (field: keyof typeof formData, value: string | boolean | string[]) => {
+  try {
+    const tempData = { ...formData, [field]: value }
+    
+    const result = projectFormSchema.safeParse(tempData)
+    
+    if (result.success) {
 
+      setFieldErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    } else {
+
+      const fieldError = result.error.issues.find(issue => 
+        issue.path[0] === field
+      )
+      
+      if (fieldError) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [field]: fieldError.message
+        }))
+      } else {
+
+        setFieldErrors(prev => {
+          const newErrors = { ...prev }
+          delete newErrors[field]
+          return newErrors
+        })
+      }
+    }
+  } catch (err) {
+    console.error('Validation error:', err)
+  }
+}
+
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+    validateField(field, value)
+  }
   const handleAddTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
+      const updatedTags = [...formData.tags, newTag.trim()]
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
+        tags: updatedTags,
       }))
+      validateField('tags', updatedTags)
       setNewTag('')
     }
   }
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    const updatedTags = formData.tags.filter((tag) => tag !== tagToRemove)
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: updatedTags,
     }))
+    validateField('tags', updatedTags)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -71,30 +123,43 @@ const AddProjectPage = () => {
       handleAddTag()
     }
   }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!session?.accessToken) {
       setError('Authentication required')
-      return
-    }
-
-    if (!formData.title || !formData.description) {
-      setError('Title and description are required')
       return
     }
 
     try {
       setSaving(true)
       setError(null)
+      setFieldErrors({}) // Clear previous field errors
 
-      await createProject(formData, session.accessToken)
-      
+      const validatedData = projectFormSchema.parse(formData)
+
+      await createProject(validatedData, session.accessToken)
+
+      toast.success('Project created successfully!')
       router.push('/admin/projects')
     } catch (err) {
-      console.error('Failed to create project:', err)
-      setError('Failed to create project')
+      if (err instanceof ZodError) {
+        // Convert Zod errors to field-specific errors
+        const errors: Record<string, string> = {}
+        err.issues.forEach((issue) => {
+          const field = issue.path[0] as string
+          errors[field] = issue.message
+        })
+        setFieldErrors(errors)
+
+        const firstError = err.issues[0]?.message || 'Invalid input'
+        toast.error(firstError)
+        setError('Please fix the validation errors below')
+      } else {
+        console.error('Failed to create project:', err)
+        toast.error('Failed to create project')
+        setError('Failed to create project')
+      }
     } finally {
       setSaving(false)
     }
@@ -108,7 +173,9 @@ const AddProjectPage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Add New Project</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Add New Project
+        </h1>
       </div>
 
       {error && (
@@ -130,7 +197,10 @@ const AddProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="title"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Project Title *
                   </Label>
                   <Input
@@ -138,28 +208,57 @@ const AddProjectPage = () => {
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
                     placeholder="Enter project title"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.title
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
+                  {fieldErrors.title && (
+                    <p className="text-red-500 text-sm">{fieldErrors.title}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="description"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Description *
                   </Label>
                   <Textarea
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
                     placeholder="Describe your project in detail..."
                     rows={6}
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 resize-none"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 resize-none ${
+                      fieldErrors.description
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
+                  {fieldErrors.description && (
+                    <p className="text-red-500 text-sm">
+                      {fieldErrors.description}
+                    </p>
+                  )}
+                  <p className="text-sm text-slate-500">
+                    {formData.description.length}/1000 characters
+                    {formData.description.length < 50 &&
+                      ` (minimum 50 required)`}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="image"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Image URL
                   </Label>
                   <Input
@@ -167,8 +266,15 @@ const AddProjectPage = () => {
                     value={formData.image}
                     onChange={(e) => handleInputChange('image', e.target.value)}
                     placeholder="https://example.com/image.jpg"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.image
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                   />
+                  {fieldErrors.image && (
+                    <p className="text-red-500 text-sm">{fieldErrors.image}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -182,7 +288,10 @@ const AddProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="liveUrl" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="liveUrl"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     <ExternalLink className="w-4 h-4 inline mr-2" />
                     Live Demo URL
                   </Label>
@@ -190,14 +299,19 @@ const AddProjectPage = () => {
                     id="liveUrl"
                     type="url"
                     value={formData.liveUrl}
-                    onChange={(e) => handleInputChange('liveUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('liveUrl', e.target.value)
+                    }
                     placeholder="https://your-project.vercel.app"
                     className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="repoUrl" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="repoUrl"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     <Github className="w-4 h-4 inline mr-2" />
                     Repository URL
                   </Label>
@@ -205,7 +319,9 @@ const AddProjectPage = () => {
                     id="repoUrl"
                     type="url"
                     value={formData.repoUrl}
-                    onChange={(e) => handleInputChange('repoUrl', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('repoUrl', e.target.value)
+                    }
                     placeholder="https://github.com/username/project"
                     className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
                   />
@@ -225,13 +341,18 @@ const AddProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="featured" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="featured"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Featured Project
                   </Label>
                   <Switch
                     id="featured"
                     checked={formData.featured}
-                    onCheckedChange={(checked) => handleInputChange('featured', checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('featured', checked)
+                    }
                   />
                 </div>
               </CardContent>
@@ -246,7 +367,10 @@ const AddProjectPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newTag" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="newTag"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Add Technology
                   </Label>
                   <div className="flex gap-2">
@@ -268,6 +392,12 @@ const AddProjectPage = () => {
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
+                  {fieldErrors.tags && (
+                    <p className="text-red-500 text-sm">{fieldErrors.tags}</p>
+                  )}
+                  <p className="text-sm text-slate-500">
+                    {formData.tags.length}/10 tags
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -305,7 +435,12 @@ const AddProjectPage = () => {
                   <Button
                     type="submit"
                     className="flex-1 bg-purple-600 hover:bg-purple-700"
-                    disabled={saving || !formData.title || !formData.description}
+                    disabled={
+                      saving ||
+                      Object.keys(fieldErrors).length > 0 ||
+                      !formData.title ||
+                      !formData.description
+                    }
                   >
                     {saving ? (
                       <>

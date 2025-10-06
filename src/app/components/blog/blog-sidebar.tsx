@@ -1,8 +1,8 @@
 // app/components/blog/blog-sidebar.tsx
 import Link from 'next/link'
-import { BlogPost, getBlogPosts, getPopularPosts } from '@/lib/blog-data'
+import { BlogPost, getBlogPosts, /* getPopularPosts */ } from '@/lib/blog-data'
 import { Button } from '@/components/ui/button'
-import { Calendar, ArrowRight, TrendingUp } from 'lucide-react'
+import { Calendar, ArrowRight, /* TrendingUp */ } from 'lucide-react'
 
 interface BlogSidebarProps {
   currentPost?: {
@@ -12,15 +12,15 @@ interface BlogSidebarProps {
 }
 
 export async function BlogSidebar({ currentPost }: BlogSidebarProps) {
-  const [recentPosts, popularPosts] = await Promise.all([
-    getBlogPosts({ limit: 5 }),
-    getPopularPosts(4)
+  const [recentPosts, /* popularPosts */] = await Promise.all([
+    getBlogPosts({ limit: 6, published: true }),
+    // getPopularPosts(4)
   ])
 
   return (
     <div className="space-y-8">   
       {/* Popular Posts */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+      {/* <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 transition-colors duration-300">
         <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center">
           <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
           Popular Posts
@@ -48,7 +48,7 @@ export async function BlogSidebar({ currentPost }: BlogSidebarProps) {
             </Link>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Recent Posts */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 transition-colors duration-300">
@@ -59,7 +59,7 @@ export async function BlogSidebar({ currentPost }: BlogSidebarProps) {
         <div className="space-y-3">
           {recentPosts.data
             .filter((post: BlogPost) => !currentPost || post.id !== currentPost.id)
-            .slice(0, 4)
+            .slice(0, 6)
             .map((post: BlogPost) => (
               <Link
                 key={post.id}

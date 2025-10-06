@@ -6,13 +6,20 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+// Add these imports at the top
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Plus, Search, Edit, Trash2, Code, Loader2 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
-import { 
-  getAllSkills, 
-  deleteSkill, 
-  type Skill 
-} from '@/lib/skill-data'
+import { getAllSkills, deleteSkill, type Skill } from '@/lib/skill-data'
 import { useSession } from 'next-auth/react'
 
 const SkillsPage = () => {
@@ -21,6 +28,9 @@ const SkillsPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { data: session } = useSession()
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null)
 
   useEffect(() => {
     fetchSkills()
@@ -49,19 +59,26 @@ const SkillsPage = () => {
   const categories = [...new Set(skills.map((skill) => skill.category))]
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this skill?')) {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('No authentication token found')
-        }
-        
-        await deleteSkill(id, session.accessToken)
-        setSkills(skills.filter((skill) => skill.id !== id))
-      } catch (err) {
-        console.error('Failed to delete skill:', err)
-        setError('Failed to delete skill')
+    try {
+      if (!session?.accessToken) {
+        throw new Error('No authentication token found')
       }
+
+      await deleteSkill(id, session.accessToken)
+      setSkills(skills.filter((skill) => skill.id !== id))
+      setDeleteDialogOpen(false)
+      setSkillToDelete(null)
+    } catch (err) {
+      console.error('Failed to delete skill:', err)
+      setError('Failed to delete skill')
+      setDeleteDialogOpen(false)
+      setSkillToDelete(null)
     }
+  }
+
+  const openDeleteDialog = (skill: Skill) => {
+    setSkillToDelete(skill)
+    setDeleteDialogOpen(true)
   }
 
   const getSkillColor = (skill: Skill): string => {
@@ -104,7 +121,10 @@ const SkillsPage = () => {
 
         {/* Skills Loading */}
         {[1, 2].map((categoryIndex) => (
-          <Card key={categoryIndex} className="border-slate-200 dark:border-slate-700">
+          <Card
+            key={categoryIndex}
+            className="border-slate-200 dark:border-slate-700"
+          >
             <CardHeader>
               <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-32 animate-pulse"></div>
             </CardHeader>
@@ -148,9 +168,9 @@ const SkillsPage = () => {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-700 dark:text-red-400">{error}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchSkills}
             className="mt-2"
           >
@@ -221,7 +241,9 @@ const SkillsPage = () => {
             className="border-slate-200 dark:border-slate-700"
           >
             <CardHeader>
-              <CardTitle className="text-slate-900 dark:text-white">{category}</CardTitle>
+              <CardTitle className="text-slate-900 dark:text-white">
+                {category}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -241,7 +263,9 @@ const SkillsPage = () => {
 
                       <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full ${getSkillColor(skill)} transition-all duration-1000`}
+                          className={`h-2 rounded-full ${getSkillColor(
+                            skill
+                          )} transition-all duration-1000`}
                           style={{ width: `${skill.level}%` }}
                         ></div>
                       </div>
@@ -265,7 +289,7 @@ const SkillsPage = () => {
                         variant="ghost"
                         size="icon"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        onClick={() => handleDelete(skill.id)}
+                        onClick={() => openDeleteDialog(skill)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -299,6 +323,29 @@ const SkillsPage = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              skill &quote;
+              {skillToDelete?.name}&quote; from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => skillToDelete && handleDelete(skillToDelete.id)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

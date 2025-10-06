@@ -9,15 +9,21 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
-  ArrowLeft,
-  Save,
-  Loader2
-} from 'lucide-react'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
 import { getSkillById, updateSkill, type Skill } from '@/lib/skill-data'
 import { useSession } from 'next-auth/react'
+
+import { skillFormSchema } from '@/lib/validation/skill-validation'
+import { ZodError } from 'zod'
+import { toast } from 'sonner'
 
 const EditSkillPage = () => {
   const params = useParams()
@@ -29,6 +35,9 @@ const EditSkillPage = () => {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [skill, setSkill] = useState<Skill | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof typeof formData, string>>
+  >({})
 
   const [formData, setFormData] = useState({
     name: '',
@@ -46,7 +55,7 @@ const EditSkillPage = () => {
     'Mobile',
     'Database',
     'DevOps',
-    'Design'
+    'Design',
   ]
 
   const colorOptions = [
@@ -68,7 +77,7 @@ const EditSkillPage = () => {
     if (skillId) {
       fetchSkill()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skillId])
 
   const fetchSkill = async () => {
@@ -76,7 +85,7 @@ const EditSkillPage = () => {
       setLoading(true)
       setError(null)
       const skillData = await getSkillById(skillId)
-      
+
       if (skillData) {
         setSkill(skillData)
         setFormData({
@@ -97,24 +106,68 @@ const EditSkillPage = () => {
     }
   }
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
+  const validateField = (
+    field: keyof typeof formData,
+    value: string | number
+  ) => {
+    try {
+      const tempData = { ...formData, [field]: value }
+      const result = skillFormSchema.safeParse(tempData)
+
+      if (result.success) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev }
+          delete newErrors[field]
+          return newErrors
+        })
+      } else {
+        const fieldError = result.error.issues.find(
+          (issue) => issue.path[0] === field
+        )
+
+        if (fieldError) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            [field]: fieldError.message,
+          }))
+        } else {
+          setFieldErrors((prev) => {
+            const newErrors = { ...prev }
+            delete newErrors[field]
+            return newErrors
+          })
+        }
+      }
+    } catch (err) {
+      console.error('Validation error:', err)
+    }
+  }
+
+  const handleInputChange = (
+    field: keyof typeof formData,
+    value: string | number
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }))
+    validateField(field, value)
   }
 
   const handleLevelChange = (value: number[]) => {
-    setFormData(prev => ({
+    const newLevel = value[0]
+    setFormData((prev) => ({
       ...prev,
-      level: value[0]
+      level: newLevel,
     }))
+    validateField('level', newLevel)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!session?.accessToken) {
+      toast.error('Authentication required')
       setError('Authentication required')
       return
     }
@@ -122,13 +175,31 @@ const EditSkillPage = () => {
     try {
       setSaving(true)
       setError(null)
+      setFieldErrors({})
 
-      await updateSkill(skillId, formData, session.accessToken)
-      
+      const validatedData = skillFormSchema.parse(formData)
+
+      await updateSkill(skillId, validatedData, session.accessToken)
+
+      toast.success('Skill updated successfully!')
       router.push('/admin/skills')
     } catch (err) {
-      console.error('Failed to update skill:', err)
-      setError('Failed to update skill')
+      if (err instanceof ZodError) {
+        const errors: Record<string, string> = {}
+        err.issues.forEach((issue) => {
+          const field = issue.path[0] as string
+          errors[field] = issue.message
+        })
+        setFieldErrors(errors)
+
+        const firstError = err.issues[0]?.message || 'Invalid input'
+        toast.error(firstError)
+        setError('Please fix the validation errors below')
+      } else {
+        console.error('Failed to update skill:', err)
+        toast.error('Failed to update skill')
+        setError('Failed to update skill')
+      }
     } finally {
       setSaving(false)
     }
@@ -210,12 +281,16 @@ const EditSkillPage = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Edit Skill</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            Edit Skill
+          </h1>
         </div>
 
         <Card className="border-slate-200 dark:border-slate-700">
           <CardContent className="p-12 text-center">
-            <div className="text-red-500 dark:text-red-400 text-lg mb-4">{error}</div>
+            <div className="text-red-500 dark:text-red-400 text-lg mb-4">
+              {error}
+            </div>
             <Button onClick={fetchSkill}>Retry</Button>
           </CardContent>
         </Card>
@@ -231,7 +306,9 @@ const EditSkillPage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Edit Skill</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          Edit Skill
+        </h1>
       </div>
 
       {error && (
@@ -252,7 +329,10 @@ const EditSkillPage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="name"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Skill Name *
                   </Label>
                   <Input
@@ -260,20 +340,38 @@ const EditSkillPage = () => {
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="e.g., React, Node.js, TypeScript"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.name
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
+                  {fieldErrors.name && (
+                    <p className="text-red-500 text-sm">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="category"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Category *
                   </Label>
                   <Select
                     value={formData.category}
-                    onValueChange={(value) => handleInputChange('category', value)}
+                    onValueChange={(value) =>
+                      handleInputChange('category', value)
+                    }
                   >
-                    <SelectTrigger className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600">
+                    <SelectTrigger
+                      className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                        fieldErrors.category
+                          ? 'border-red-500 dark:border-red-500'
+                          : ''
+                      }`}
+                    >
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -284,21 +382,38 @@ const EditSkillPage = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  {fieldErrors.category && (
+                    <p className="text-red-500 text-sm">
+                      {fieldErrors.category}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="order" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="order"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Display Order
                   </Label>
                   <Input
                     id="order"
                     type="number"
                     value={formData.order}
-                    onChange={(e) => handleInputChange('order', parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleInputChange('order', parseInt(e.target.value) || 0)
+                    }
                     placeholder="0"
                     min="0"
-                    className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600"
+                    className={`bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 ${
+                      fieldErrors.order
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                   />
+                  {fieldErrors.order && (
+                    <p className="text-red-500 text-sm">{fieldErrors.order}</p>
+                  )}
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Lower numbers appear first within the category
                   </p>
@@ -318,7 +433,10 @@ const EditSkillPage = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <Label htmlFor="level" className="text-slate-700 dark:text-slate-300">
+                    <Label
+                      htmlFor="level"
+                      className="text-slate-700 dark:text-slate-300"
+                    >
                       Proficiency Level
                     </Label>
                     <span className="text-lg font-semibold text-purple-600">
@@ -332,6 +450,9 @@ const EditSkillPage = () => {
                     step={1}
                     className="w-full"
                   />
+                  {fieldErrors.level && (
+                    <p className="text-red-500 text-sm">{fieldErrors.level}</p>
+                  )}
                   <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400">
                     <span>Beginner</span>
                     <span>Expert</span>
@@ -339,7 +460,10 @@ const EditSkillPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="color" className="text-slate-700 dark:text-slate-300">
+                  <Label
+                    htmlFor="color"
+                    className="text-slate-700 dark:text-slate-300"
+                  >
                     Progress Bar Color
                   </Label>
                   <Select
@@ -353,7 +477,9 @@ const EditSkillPage = () => {
                       {colorOptions.map((color) => (
                         <SelectItem key={color.value} value={color.value}>
                           <div className="flex items-center gap-2">
-                            <div className={`w-4 h-4 rounded ${color.value}`}></div>
+                            <div
+                              className={`w-4 h-4 rounded ${color.value}`}
+                            ></div>
                             {color.label}
                           </div>
                         </SelectItem>
@@ -408,7 +534,12 @@ const EditSkillPage = () => {
                   <Button
                     type="submit"
                     className="flex-1 bg-purple-600 hover:bg-purple-700"
-                    disabled={saving || !formData.name || !formData.category}
+                    disabled={
+                      saving ||
+                      Object.keys(fieldErrors).length > 0 ||
+                      !formData.name ||
+                      !formData.category
+                    }
                   >
                     {saving ? (
                       <>

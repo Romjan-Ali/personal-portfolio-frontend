@@ -11,6 +11,10 @@ import Link from 'next/link'
 import { getSession, signIn } from 'next-auth/react'
 import Loading from '@/app/components/loading'
 
+import { ZodError } from 'zod'
+import { toast } from 'sonner'
+import { loginSchema } from '@/lib/validation/login-validation'
+
 const LoginPage = () => {
   const [email, setEmail] = useState('admin@example.com')
   const [password, setPassword] = useState('hashedPassword')
@@ -18,12 +22,16 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isComponentLoading, setIsComponentLoading] = useState(true)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string
+    password?: string
+  }>({})
   const router = useRouter()
 
   useEffect(() => {
     const checkSession = async () => {
       const session = await getSession()
-      console.log({session})
+      console.log({ session })
       if (session?.user?.role === 'ADMIN') {
         router.push('/admin')
       }
@@ -32,14 +40,77 @@ const LoginPage = () => {
     checkSession()
   }, [router])
 
-  if(isComponentLoading) {
+  if (isComponentLoading) {
     return <Loading />
+  }
+
+  const validateField = (field: 'email' | 'password', value: string) => {
+    try {
+      const tempData = { email, password, [field]: value }
+      loginSchema.parse(tempData)
+
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const fieldError = err.issues.find((issue) => issue.path[0] === field)
+        if (fieldError) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            [field]: fieldError.message,
+          }))
+        }
+      }
+    }
+  }
+
+  // Update input handlers to include validation
+  const handleEmailChange = (value: string) => {
+    setEmail(value)
+    validateField('email', value)
+  }
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value)
+    validateField('password', value)
+  }
+
+  // Add form validation function
+  const isFormValid = () => {
+    try {
+      loginSchema.parse({ email, password })
+      return true
+    } catch {
+      return false
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate form before submission
+    try {
+      loginSchema.parse({ email, password })
+    } catch (err) {
+      if (err instanceof ZodError) {
+        const errors: { email?: string; password?: string } = {}
+        err.issues.forEach((issue) => {
+          const field = issue.path[0] as string
+          errors[field as keyof typeof errors] = issue.message
+        })
+        setFieldErrors(errors)
+        toast.error('Please fix the validation errors')
+        return
+      }
+    }
+
     setIsLoading(true)
     setError('')
+    setFieldErrors({})
+
     try {
       const res = await signIn('credentials', {
         redirect: false,
@@ -50,17 +121,18 @@ const LoginPage = () => {
       if (res?.error) {
         console.log('res.error', res.error)
         setError('Invalid email or password')
+        toast.error('Invalid email or password')
       } else {
-        router.push('/admin') // redirect after successful login
+        toast.success('Login successful!')
+        router.push('/admin')
       }
     } catch (error) {
       console.error('Login error:', error)
+      toast.error('Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
-
-  console.log('login')
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center p-4">
@@ -107,12 +179,21 @@ const LoginPage = () => {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     placeholder="admin@example.com"
-                    className="pl-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                    className={`pl-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 ${
+                      fieldErrors.email
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -128,9 +209,13 @@ const LoginPage = () => {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     placeholder="Enter your password"
-                    className="pl-10 pr-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                    className={`pl-10 pr-10 bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 ${
+                      fieldErrors.password
+                        ? 'border-red-500 dark:border-red-500'
+                        : ''
+                    }`}
                     required
                   />
                   <button
@@ -145,28 +230,21 @@ const LoginPage = () => {
                     )}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || !isFormValid()}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2"
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
-
-            {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-              <h4 className="text-sm font-medium text-slate-900 dark:text-white mb-2">
-                Demo Credentials:
-              </h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                Email: admin@romjanali.com
-                <br />
-                Password: demo123
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -7,6 +7,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog'
+import {
   Plus,
   Search,
   Edit,
@@ -17,11 +28,11 @@ import {
   Briefcase,
 } from 'lucide-react'
 import { withAuth } from '@/app/components/admin/hoc/with-auth'
-import { 
-  getAllProjects, 
-  deleteProject, 
+import {
+  getAllProjects,
+  deleteProject,
   updateProject,
-  type Project 
+  type Project,
 } from '@/lib/project-data'
 import { useSession } from 'next-auth/react'
 
@@ -57,18 +68,16 @@ const ProjectsPage = () => {
   )
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('No authentication token found')
-        }
-        
-        await deleteProject(id, session.accessToken)
-        setProjects(projects.filter((project) => project.id !== id))
-      } catch (err) {
-        console.error('Failed to delete project:', err)
-        setError('Failed to delete project')
+    try {
+      if (!session?.accessToken) {
+        throw new Error('No authentication token found')
       }
+
+      await deleteProject(id, session.accessToken)
+      setProjects(projects.filter((project) => project.id !== id))
+    } catch (err) {
+      console.error('Failed to delete project:', err)
+      setError('Failed to delete project')
     }
   }
 
@@ -78,18 +87,20 @@ const ProjectsPage = () => {
         throw new Error('No authentication token found')
       }
 
-      const project = projects.find(p => p.id === id)
+      const project = projects.find((p) => p.id === id)
       if (!project) return
 
       const updatedProject = await updateProject(
-        id, 
-        { featured: !project.featured }, 
+        id,
+        { featured: !project.featured },
         session.accessToken
       )
-      
-      setProjects(projects.map((project) =>
-        project.id === id ? updatedProject : project
-      ))
+
+      setProjects(
+        projects.map((project) =>
+          project.id === id ? updatedProject : project
+        )
+      )
     } catch (err) {
       console.error('Failed to update project:', err)
       setError('Failed to update project')
@@ -125,7 +136,10 @@ const ProjectsPage = () => {
         {/* Projects Grid Loading */}
         <div className="grid gap-6">
           {[1, 2].map((index) => (
-            <Card key={index} className="border-slate-200 dark:border-slate-700">
+            <Card
+              key={index}
+              className="border-slate-200 dark:border-slate-700"
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -138,7 +152,10 @@ const ProjectsPage = () => {
                     <div className="h-4 bg-slate-300 dark:bg-slate-700 rounded w-3/4 mb-4 animate-pulse"></div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {[1, 2, 3, 4].map((techIndex) => (
-                        <div key={techIndex} className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16 animate-pulse"></div>
+                        <div
+                          key={techIndex}
+                          className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-16 animate-pulse"
+                        ></div>
                       ))}
                     </div>
                     <div className="flex items-center gap-4">
@@ -148,7 +165,10 @@ const ProjectsPage = () => {
                   </div>
                   <div className="flex items-center gap-2 ml-4">
                     {[1, 2, 3].map((btnIndex) => (
-                      <div key={btnIndex} className="h-8 w-8 bg-slate-300 dark:bg-slate-700 rounded animate-pulse"></div>
+                      <div
+                        key={btnIndex}
+                        className="h-8 w-8 bg-slate-300 dark:bg-slate-700 rounded animate-pulse"
+                      ></div>
                     ))}
                   </div>
                 </div>
@@ -316,14 +336,42 @@ const ProjectsPage = () => {
                       <Edit className="w-4 h-4" />
                     </Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                    onClick={() => handleDelete(project.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="max-w-sm">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Delete this project?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          remove the project
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {' '}
+                            “{project.title}”{' '}
+                          </span>
+                          from your portfolio.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(project.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardContent>

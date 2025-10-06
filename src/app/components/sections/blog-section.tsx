@@ -10,7 +10,7 @@ import {
 } from '@/lib/blog-data'
 
 export async function BlogSection() {
-  const {data: blogs} = await getBlogPosts({ limit: 3 })
+  const {data: blogs} = await getBlogPosts({ limit: 3, published: true })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

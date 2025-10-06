@@ -13,8 +13,6 @@ import {
   getAllTags as getAllTagsUtil,
 } from './blog-utils'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 export interface BlogPost {
   id: string
   title: string
@@ -48,15 +46,29 @@ export interface User {
 // API base URL - adjust based on your environment
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
 
-// API service functions
-async function fetchFromAPI(endpoint: string, options?: RequestInit) {
+// Revalidation tags
+export const BLOG_TAGS = {
+  ALL: 'blogs',
+  LIST: 'blogs-list',
+  FEATURED: 'blogs-featured',
+  POPULAR: 'blogs-popular',
+  BY_TAG: (tag: string) => `blogs-tag-${tag}`,
+  BY_SEARCH: (query: string) => `blogs-search-${query}`,
+  SINGLE: (slugOrId: string) => `blog-${slugOrId}`,
+} as const
+
+// API service functions with revalidation support for GET requests
+async function fetchFromAPI(endpoint: string, options?: RequestInit & { next?: { tags?: string[]; revalidate?: number } }) {
   try {
+    const { next, ...fetchOptions } = options || {}
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...fetchOptions?.headers,
       },
-      ...options,
+      ...fetchOptions,
+      next: next ? { tags: next.tags, revalidate: next.revalidate } : undefined,
     })
 
     if (!response.ok) {
@@ -70,7 +82,41 @@ async function fetchFromAPI(endpoint: string, options?: RequestInit) {
   }
 }
 
-// Main data functions
+// Revalidation utility functions
+async function revalidateTag(tag: string) {
+  try {
+    const response = await fetch('/api/revalidate?tag=' + encodeURIComponent(tag), {
+      method: 'POST',
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Revalidation failed for tag: ${tag}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error(`Failed to revalidate tag ${tag}:`, error)
+  }
+}
+
+export async function revalidateBlogPosts() {
+  await revalidateTag(BLOG_TAGS.ALL)
+  await revalidateTag(BLOG_TAGS.LIST)
+}
+
+export async function revalidateBlogPost(slugOrId: string) {
+  await revalidateTag(BLOG_TAGS.SINGLE(slugOrId))
+}
+
+export async function revalidateBlogTag(tag: string) {
+  await revalidateTag(BLOG_TAGS.BY_TAG(tag))
+}
+
+export async function revalidateBlogSearch(query: string) {
+  await revalidateTag(BLOG_TAGS.BY_SEARCH(query))
+}
+
+// Main data functions with revalidation for GET requests
 export async function getBlogPosts(options?: {
   featured?: boolean
   limit?: number
@@ -87,26 +133,48 @@ export async function getBlogPosts(options?: {
     if (options?.limit) params.append('limit', options.limit.toString())
     if (options?.tag) params.append('tag', options.tag)
     if (options?.search) params.append('search', options.search)
-    if (options?.published !== false) params.append('published', 'true')
+    if (options?.published !== undefined) params.append('published', options.published.toString())
     if (options?.page) params.append('page', options.page.toString())
 
     const endpoint = `/blogs${params.toString() ? `?${params.toString()}` : ''}`
-    console.log({ endpoint })
-    const data = await fetchFromAPI(endpoint)
-    console.log({ data })
+    
+    // Determine revalidation tags
+    const defaultTags: string[] = [BLOG_TAGS.ALL, BLOG_TAGS.LIST]
+    
+    if (options?.tag) {
+      defaultTags.push(BLOG_TAGS.BY_TAG(options.tag))
+    }
+    
+    if (options?.search) {
+      defaultTags.push(BLOG_TAGS.BY_SEARCH(options.search))
+    }
+    
+    if (options?.featured) {
+      defaultTags.push(BLOG_TAGS.FEATURED)
+    }
+
+    const data = await fetchFromAPI(endpoint, {
+      next: {
+        tags: defaultTags,
+        revalidate: 60, // Revalidate every 60 seconds
+      }
+    })
 
     return data.blogs || data || []
   } catch (error) {
     console.error('Failed to fetch blog posts:', error)
-    // Return empty array as fallback
     return []
   }
 }
 
 export async function getBlogPostBySlug(slug: string) {
   try {
-    const data = await fetchFromAPI(`/blogs/${slug}`)
-    console.log({ data })
+    const data = await fetchFromAPI(`/blogs/${slug}`, {
+      next: {
+        tags: [BLOG_TAGS.ALL, BLOG_TAGS.SINGLE(slug)],
+        revalidate: 60,
+      }
+    })
     return data.blog || data || null
   } catch (error) {
     console.error(`Failed to fetch blog post with slug ${slug}:`, error)
@@ -116,8 +184,12 @@ export async function getBlogPostBySlug(slug: string) {
 
 export async function getBlogPostById(id: string) {
   try {
-    const data = await fetchFromAPI(`/blogs/id/${id}`)
-    console.log({ data })
+    const data = await fetchFromAPI(`/blogs/id/${id}`, {
+      next: {
+        tags: [BLOG_TAGS.ALL, BLOG_TAGS.SINGLE(id)],
+        revalidate: 60,
+      }
+    })
     return data.blog || data || null
   } catch (error) {
     console.error(`Failed to fetch blog post with id ${id}:`, error)
@@ -125,14 +197,19 @@ export async function getBlogPostById(id: string) {
   }
 }
 
-
 export async function getRelatedPosts(
   currentPostId: string,
   limit: number = 3
 ) {
   try {
     const data = await fetchFromAPI(
-      `/blogs/${currentPostId}/related?limit=${limit}`
+      `/blogs/${currentPostId}/related?limit=${limit}`,
+      {
+        next: {
+          tags: [BLOG_TAGS.ALL, BLOG_TAGS.SINGLE(currentPostId)],
+          revalidate: 60,
+        }
+      }
     )
     return data.relatedPosts || data || []
   } catch (error) {
@@ -143,7 +220,12 @@ export async function getRelatedPosts(
 
 export async function getPopularPosts(limit: number = 5) {
   try {
-    const data = await fetchFromAPI(`/blogs/popular?limit=${limit}`)
+    const data = await fetchFromAPI(`/blogs/popular?limit=${limit}`, {
+      next: {
+        tags: [BLOG_TAGS.ALL, BLOG_TAGS.POPULAR],
+        revalidate: 60,
+      }
+    })
     return data.blogs || data || []
   } catch (error) {
     console.error('Failed to fetch popular posts:', error)
@@ -153,7 +235,12 @@ export async function getPopularPosts(limit: number = 5) {
 
 export async function getAllTags() {
   try {
-    const data = await fetchFromAPI('/blogs/tags')
+    const data = await fetchFromAPI('/blogs/tags', {
+      next: {
+        tags: [BLOG_TAGS.ALL, 'blog-tags'],
+        revalidate: 3600, // Cache tags longer (1 hour)
+      }
+    })
     return data.tags || data || []
   } catch (error) {
     console.error('Failed to fetch all tags:', error)
@@ -163,11 +250,16 @@ export async function getAllTags() {
 
 export async function getTotalViews() {
   try {
-    const data = await fetchFromAPI('/blogs/total-views')
+    const data = await fetchFromAPI('/blogs/total-views', {
+      next: {
+        tags: [BLOG_TAGS.ALL, 'blog-views'],
+        revalidate: 300, // 5 minutes for views
+      }
+    })
     return data.totalViews || data || 0
   } catch (error) {
     console.error('Failed to get total views', error)
-    return { data: 0 }
+    return 0
   }
 }
 
@@ -176,11 +268,14 @@ export async function incrementBlogViews(slug: string) {
     await fetchFromAPI(`/blogs/${slug}/views`, {
       method: 'POST',
     })
+    // Revalidate the individual post after view increment
+    await revalidateBlogPost(slug)
   } catch (error) {
     console.error(`Failed to increment views for ${slug}:`, error)
   }
 }
 
+// Mutation functions with manual revalidation
 export async function createBlogPost(
   blogData: Partial<BlogPost>,
   token?: string
@@ -201,6 +296,21 @@ export async function createBlogPost(
     })
 
     console.log({ data })
+    
+    // Revalidate after successful creation
+    if (data.blog || data) {
+      await revalidateBlogPosts()
+      if (data.blog?.slug) {
+        await revalidateBlogPost(data.blog.slug)
+      }
+      // Revalidate tag pages if the post has tags
+      if (data.blog?.tags && Array.isArray(data.blog.tags)) {
+        for (const tag of data.blog.tags) {
+          await revalidateBlogTag(tag)
+        }
+      }
+    }
+    
     return data.blog || data
   } catch (error) {
     console.error('Failed to create blog post:', error)
@@ -233,7 +343,23 @@ export async function updateBlogPost(
     }
 
     const result = await data.json()
-    return result.blog || result
+    const updatedPost = result.blog || result
+    
+    // Revalidate after successful update
+    if (updatedPost) {
+      await revalidateBlogPosts()
+      if (updatedPost.slug) {
+        await revalidateBlogPost(updatedPost.slug)
+      }
+      // Revalidate tag pages
+      if (updatedPost.tags && Array.isArray(updatedPost.tags)) {
+        for (const tag of updatedPost.tags) {
+          await revalidateBlogTag(tag)
+        }
+      }
+    }
+    
+    return updatedPost
   } catch (error) {
     console.error(`Failed to update blog post ${id}:`, error)
     throw error
@@ -259,7 +385,21 @@ export async function deleteBlogPost(id: string, token?: string) {
       throw new Error(`API error: ${response.status} ${response.statusText}`)
     }
 
-    return await response.json()
+    const result = await response.json()
+    
+    // Revalidate after successful deletion
+    await revalidateBlogPosts()
+    if (result.blog?.slug) {
+      await revalidateBlogPost(result.blog.slug)
+    }
+    // Revalidate tag pages if the deleted post had tags
+    if (result.blog?.tags && Array.isArray(result.blog.tags)) {
+      for (const tag of result.blog.tags) {
+        await revalidateBlogTag(tag)
+      }
+    }
+    
+    return result
   } catch (error) {
     console.error(`Failed to delete blog post ${id}:`, error)
     throw error

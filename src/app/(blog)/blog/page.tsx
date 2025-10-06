@@ -16,7 +16,7 @@ import { Calendar, Clock, ArrowRight, Search } from 'lucide-react'
 import Pagination from '../../components/blog/pagination'
 
 export const metadata: Metadata = {
-  title: 'Blog - John Doe',
+  title: 'Blog - Romjan Ali',
   description:
     'Read my latest articles on web development, programming, and technology trends.',
 }
@@ -35,6 +35,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { data: posts, pagination } = await getBlogPosts({
     limit: 9,
     page: page ? parseInt(page) : 1,
+    published: true,
   })
 
   const { data: totalViews } = await getTotalViews()
@@ -51,6 +52,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     const { data: posts, pagination } = await getBlogPosts({
       tag,
       page: page ? parseInt(page) : 1,
+      published: true,
     })
     filteredPosts = posts
     filteredPagination = pagination
@@ -58,6 +60,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     const { data: posts, pagination } = await getBlogPosts({
       search,
       page: page ? parseInt(page) : 1,
+      published: true,
     })
     filteredPosts = posts
     filteredPagination = pagination

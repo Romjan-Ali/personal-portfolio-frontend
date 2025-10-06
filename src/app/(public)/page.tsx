@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   title: 'Home',
   description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
   openGraph: {
-    title: 'John Doe - Full Stack Developer',
+    title: 'Romjan Ali - Full Stack Developer',
     description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
     images: ['/og-home.jpg']
   },
   twitter: {
-    title: 'John Doe - Full Stack Developer',
+    title: 'Romjan Ali - Full Stack Developer',
     description: 'Welcome to my portfolio. I\'m a Full Stack Developer passionate about creating exceptional digital experiences.',
     images: ['/og-home.jpg']
   }

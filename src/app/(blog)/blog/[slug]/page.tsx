@@ -34,27 +34,26 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${post.title} - John Doe`,
+    title: `${post.title} - Romjan Ali`,
     description: post.summary,
     openGraph: {
       title: post.title,
       description: post.summary,
       type: 'article',
       publishedTime: post.createdAt,
-      authors: [post.author?.name || 'John Doe'],
+      authors: [post.author?.name || 'Romjan Ali'],
     },
   }
 }
 
-/* export async function generateStaticParams() {
+export async function generateStaticParams() {
   const { getBlogPosts } = await import('@/lib/blog-data')
-  const posts = await getBlogPosts()
+  const posts = await getBlogPosts({ published: true, limit: 100 })
 
-   return posts.data.map((post: BlogPost) => ({
+  return posts.data.map((post: BlogPost) => ({
     slug: post.slug,
-  })) 
-
-} */
+  }))
+}
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
