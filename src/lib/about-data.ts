@@ -9,9 +9,14 @@ export const personalDetails = {
   imageUrl: '/images/romjan-ali-2-3-r.png',
   resumeUrl: '/documents/romjan-ali-resume.pdf',
   stats: [
-    { number: '2+', label: 'Years Experience' },
+    // { number: '2+', label: 'Years Experience' },
     { number: '5+', label: 'Projects Completed' },
-    { number: '2+', label: 'Happy Clients' },
+    // { number: '2+', label: 'Happy Clients' },
     { number: '10+', label: 'Technologies' },
   ],
+  contacts: {
+    gitHub: 'https://github.com/Romjan-Ali',
+    linkedin: 'https://www.linkedin.com/in/romjan001',
+    email: '000romjanali@gmail.com'
+  }
 }

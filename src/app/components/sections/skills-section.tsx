@@ -116,7 +116,7 @@ export function SkillsSection() {
     }
 
     fetchSkillsData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Helper function to generate default colors based on skill level
@@ -137,7 +137,7 @@ export function SkillsSection() {
       <section
         id="skills"
         className="py-20 relative overflow-hidden 
-        bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 
+        bg-linear-to-br from-slate-50 via-purple-50 to-pink-50 
         dark:from-slate-900 dark:via-slate-800 dark:to-purple-900"
       >
         {/* Decorative blobs */}

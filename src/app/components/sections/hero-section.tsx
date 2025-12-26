@@ -1,6 +1,7 @@
 // app/components/sections/hero-section.tsx
 
 import { Button } from '@/components/ui/button'
+import { personalDetails } from '@/lib/about-data'
 import { ArrowDown, Github, Linkedin, Mail } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -83,19 +84,19 @@ export function HeroSection() {
 
         <div className="flex justify-center space-x-6">
           <a
-            href="https://github.com"
+            href={personalDetails.contacts.gitHub}
             className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Github className="w-6 h-6" />
           </a>
           <a
-            href="https://linkedin.com"
+            href={personalDetails.contacts.linkedin}
             className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Linkedin className="w-6 h-6" />
           </a>
           <a
-            href="mailto:john@example.com"
+            href={`mailto:${personalDetails.contacts.email}`}
             className="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300 transform hover:scale-110"
           >
             <Mail className="w-6 h-6" />

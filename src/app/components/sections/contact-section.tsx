@@ -1,19 +1,17 @@
 // app/components/sections/contact-section.tsx
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+
 import {
   Mail,
   Phone,
   MapPin,
-  Send,
   Github,
   Linkedin,
   Facebook,
 } from 'lucide-react'
 import Link from 'next/link'
+import { ContactForm } from '../contact/contact-form.client'
 
-export function ContactSection() {
+export function ContactSection() { 
   return (
     <section
       id="contact"
@@ -80,7 +78,10 @@ export function ContactSection() {
                 </div>
               </Link>
 
-              <Link href="https://www.google.com/maps/place/Dhaka/@23.7810672,90.254874,11z/data=!3m1!4b1!4m6!3m5!1s0x3755b8b087026b81:0x8fa563bbdd5904c2!8m2!3d23.804093!4d90.4152376!16zL20vMGZuYjQ?entry=ttu&g_ep=EgoyMDI1MDkzMC4wIKXMDSoASAFQAw%3D%3D" className="flex items-center group">
+              <Link
+                href="https://www.google.com/maps/place/Dhaka/@23.7810672,90.254874,11z/data=!3m1!4b1!4m6!3m5!1s0x3755b8b087026b81:0x8fa563bbdd5904c2!8m2!3d23.804093!4d90.4152376!16zL20vMGZuYjQ?entry=ttu&g_ep=EgoyMDI1MDkzMC4wIKXMDSoASAFQAw%3D%3D"
+                className="flex items-center group"
+              >
                 <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mr-4 group-hover:bg-purple-700 transition-colors duration-300">
                   <MapPin className="w-5 h-5 text-white" />
                 </div>
@@ -100,9 +101,21 @@ export function ContactSection() {
               <h4 className="text-lg font-semibold mb-4">Follow Me</h4>
               <div className="flex space-x-4">
                 {[
-                  { icon: Github, href: 'https://github.com/Romjan-Ali', label: 'GitHub' },
-                  { icon: Linkedin, href: 'https://www.linkedin.com/in/romjan-ali-a429bb274', label: 'LinkedIn' },
-                  { icon: Facebook, href: 'https://www.facebook.com/romjan001', label: 'Facebook' },
+                  {
+                    icon: Github,
+                    href: 'https://github.com/Romjan-Ali',
+                    label: 'GitHub',
+                  },
+                  {
+                    icon: Linkedin,
+                    href: 'https://www.linkedin.com/in/romjan-ali-a429bb274',
+                    label: 'LinkedIn',
+                  },
+                  {
+                    icon: Facebook,
+                    href: 'https://www.facebook.com/romjan001',
+                    label: 'Facebook',
+                  },
                 ].map((social, index) => (
                   <a
                     key={index}
@@ -119,68 +132,7 @@ export function ContactSection() {
 
           {/* Contact Form */}
           <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl p-8 border border-slate-300 dark:border-slate-700">
-            <form className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="font-medium text-sm">
-                    Full Name *
-                  </label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Romjan Ali"
-                    className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:ring-purple-500"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="font-medium text-sm">
-                    Email Address *
-                  </label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:ring-purple-500"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="subject" className="font-medium text-sm">
-                  Subject *
-                </label>
-                <Input
-                  id="subject"
-                  type="text"
-                  placeholder="Project Collaboration"
-                  className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:ring-purple-500"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="message" className="font-medium text-sm">
-                  Message *
-                </label>
-                <Textarea
-                  id="message"
-                  placeholder="Tell me about your project or just say hello..."
-                  rows={6}
-                  className="bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-purple-500 focus:ring-purple-500 resize-none"
-                  required
-                />
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                Send Message
-              </Button>
-            </form>
+            <ContactForm />
           </div>
         </div>
       </div>

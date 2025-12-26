@@ -100,7 +100,7 @@ export function AboutSection() {
                 asChild
               >
                 <a
-                  href="https://drive.google.com/file/d/1v_EuoLYsOK1758Gh58_TCLvhO0f9IVWm/view?usp=drive_link"
+                  href={displayData.resumeUrl}
                   target="_blank"
                 >
                   <Download className="w-4 h-4 mr-2" />

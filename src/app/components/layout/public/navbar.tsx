@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Sun, Moon, Download } from 'lucide-react'
+import { personalDetails } from '@/lib/about-data'
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -136,7 +137,7 @@ export function Navbar() {
                 asChild
               >
                 <a
-                  href="https://drive.google.com/file/d/1v_EuoLYsOK1758Gh58_TCLvhO0f9IVWm/view?usp=drive_link"
+                  href={personalDetails.resumeUrl}
                   target="_blank"
                 >
                   <Download className="w-4 h-4 mr-2" />
