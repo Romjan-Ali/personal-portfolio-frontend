@@ -7,7 +7,7 @@ export const personalDetails = {
   location: 'Dhaka, Bangladesh',
   status: 'Available for freelance work',
   imageUrl: '/images/romjan-ali-2-3-r.png',
-  resumeUrl: '/documents/romjan-ali-resume.pdf',
+  resumeUrl: '/documents/resume/romjan-ali-resume.pdf',
   stats: [
     // { number: '2+', label: 'Years Experience' },
     { number: '5+', label: 'Projects Completed' },
