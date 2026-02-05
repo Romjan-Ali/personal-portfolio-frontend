@@ -92,6 +92,7 @@ const AdminDashboard = () => {
       const totalBlogs = Array.isArray(blogsData)
         ? blogsData.length
         : (blogsData as BlogPost)?.pagination?.total || 0
+        
       const totalProjects = Array.isArray(projectsData)
         ? projectsData.length
         : (projectsData as BlogPost)?.pagination?.total || 0
